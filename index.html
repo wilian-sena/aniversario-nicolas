@@ -35,7 +35,7 @@ Missão #07 do Astro Bot" />
 <!-- Fonte -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Baloo+2:wght@800;900&display=swap">
 
 <!-- Preload do herói para pintura rápida -->
 <link rel="preload" as="image" href="images/astro-main.webp" fetchpriority="high">
@@ -573,11 +573,59 @@ h2{
   line-height:.95;
   margin:6px 0 20px;
 }
+/* Nome em estilo logo AstroBot: chunky, off-white com contorno azul e ring de Saturno */
 .hero h1 .glitch{
+  position:relative;
   display:inline-block;
-  background:linear-gradient(135deg,#fff 0%,#7cf0ff 45%,#8b5cff 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 8px 24px rgba(124,240,255,.35));
+  font-family:"Baloo 2","Fredoka One","Luckiest Guy",system-ui,sans-serif;
+  font-weight:900;
+  font-style:italic;
+  letter-spacing:.01em;
+  color:#f4f1e4;
+  -webkit-text-stroke:3px #1a3a8e;
+  paint-order:stroke fill;
+  text-shadow:
+    0 3px 0 #1a3a8e,
+    0 6px 0 #0f2560,
+    0 10px 22px rgba(76,118,255,.55),
+    0 0 40px rgba(124,240,255,.35);
+  padding:.1em .15em .22em;
+  transform:rotate(-3deg);
+  filter:drop-shadow(0 18px 24px rgba(12,24,80,.55));
+}
+.hero h1 .glitch::before{
+  content:"";
+  position:absolute;inset:-12% -8%;
+  border:6px solid #7cf0ff;
+  border-radius:50%;
+  transform:rotate(-18deg) scaleY(.32);
+  box-shadow:0 0 22px rgba(124,240,255,.55),inset 0 0 12px rgba(124,240,255,.4);
+  pointer-events:none;
+  z-index:-1;
+  opacity:.85;
+}
+.hero h1 .glitch::after{
+  content:"";
+  position:absolute;
+  left:10%;right:10%;top:42%;
+  height:8px;
+  background:linear-gradient(90deg,transparent 0%,#7cf0ff 20%,#fff 50%,#7cf0ff 80%,transparent 100%);
+  border-radius:50%;
+  transform:rotate(-18deg) scaleY(.5);
+  filter:blur(2px);
+  opacity:.6;
+  pointer-events:none;
+  z-index:2;
+}
+@media (max-width:520px){
+  .hero h1 .glitch{
+    -webkit-text-stroke:2px #1a3a8e;
+    text-shadow:
+      0 2px 0 #1a3a8e,
+      0 4px 0 #0f2560,
+      0 8px 18px rgba(76,118,255,.55);
+  }
+  .hero h1 .glitch::before{border-width:4px}
 }
 .hero h1 small{
   display:block;
@@ -1013,23 +1061,14 @@ details.faq-item summary{
   font-size:16px;font-weight:600;color:#fff;
 }
 details.faq-item summary::-webkit-details-marker{display:none}
-details.faq-item summary::after{
-  content:"";flex:none;
-  width:26px;height:26px;border-radius:50%;
-  background:rgba(124,240,255,.1);
-  border:1px solid rgba(124,240,255,.3);
-  position:relative;
-  transition:transform .3s,background .2s;
-}
 details.faq-item summary{position:relative}
 details.faq-item summary::after{
   content:"";flex:none;
   width:26px;height:26px;border-radius:50%;
   background:rgba(124,240,255,.1);
   border:1px solid rgba(124,240,255,.3);
-  position:relative;
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
   transition:transform .3s,background .2s;
-  display:flex;align-items:center;justify-content:center;
 }
 details.faq-item summary i{
   position:absolute;right:16px;top:50%;
@@ -1217,7 +1256,8 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
   "whatsapp":"+351910846565",
   "whatsappLabel":"+351 910 846 565",
   "responsavel":"Wilian (pai do Nicolas)",
-  "prazoRsvp":"13 de Abril de 2026"
+  "prazoRsvp":"10 de Maio de 2026",
+  "prazoRsvpData":"2026-05-10T23:59:59"
 }'>
 
 <noscript>
@@ -1280,16 +1320,7 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
   </div>
 
   <!-- ASTRO BOT — hero stage 3D (parallax) -->
-  <div class="hero-stage scene-3d">
-    <!-- Pinguim (background, top-right) -->
-    <div class="astro-pos astro-hero-penguin-pos" aria-hidden="true">
-      <div class="astro-wrap" data-float="B">
-        <img class="astro-layer blend-screen" src="images/astro-penguin.webp"
-             alt="" data-depth="0.35" loading="lazy" decoding="async"
-             onerror="this.closest('.astro-pos').style.display='none'">
-      </div>
-    </div>
-  </div>
+  <div class="hero-stage scene-3d"></div>
 
   <!-- COUNTDOWN -->
   <div class="countdown" id="countdown" role="timer" aria-live="off" aria-label="Contagem decrescente para a festa">
@@ -1427,9 +1458,9 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
     </div>
   </div>
   <div class="section-head reveal">
-    <div class="eyebrow">Confirmação de tripulação</div>
-    <h2>Vais embarcar connosco?</h2>
-    <p>Confirma até <strong id="prazoRsvp">—</strong> para garantirmos o teu lugar na nave.</p>
+    <div class="eyebrow" id="rsvpEyebrow">Confirmação de tripulação</div>
+    <h2 id="rsvpTitle">Vais embarcar connosco?</h2>
+    <p id="rsvpSubtitle">Confirma até <strong id="prazoRsvp">—</strong> para garantirmos o teu lugar na nave.</p>
   </div>
 
   <div class="rsvp-wrap reveal">
@@ -1505,21 +1536,21 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
   <div class="faq">
     <details class="faq-item reveal">
       <summary>Os pais podem ficar na festa?<i aria-hidden="true"></i></summary>
-      <div class="ans">Claro que sim! Há uma zona confortável para quem quiser acompanhar. Também podes deixar e voltar no fim — a escolha é tua.</div>
+      <div class="ans">Os pais devem ficar na festa para acompanhar as crianças. Há uma zona confortável para quem quiser estar presente.</div>
     </details>
     <details class="faq-item reveal">
       <summary>Há estacionamento?<i aria-hidden="true"></i></summary>
-      <div class="ans">Existe estacionamento público próximo e lugares gratuitos nas ruas adjacentes. Em dias de jogo local pode haver movimento, recomendamos chegar 10 min antes.</div>
+      <div class="ans">Sim, existe estacionamento público próximo do local.</div>
     </details>
     <details class="faq-item reveal">
       <summary>O que devem levar os convidados?<i aria-hidden="true"></i></summary>
-      <div class="ans">Apenas boa disposição e energia de aventureiro! Se tiveres alguma restrição alimentar específica, indica no formulário e tratamos de tudo.</div>
+      <div class="ans">Apenas boa disposição e energia de aventureiro!</div>
     </details>
     <details class="faq-item reveal">
       <summary>Qual é a roupa ideal?<i aria-hidden="true"></i></summary>
       <div class="ans">Roupa confortável, para brincar à vontade. Se quiseres vir a rigor espacial — capacete, estrelas, cores galácticas — vais encaixar na perfeição.</div>
     </details>
-    <details class=”faq-item reveal”>
+    <details class="faq-item reveal">
       <summary>Até quando posso confirmar?<i aria-hidden="true"></i></summary>
       <div class="ans">Idealmente até <strong id="faqPrazo">—</strong>. Assim conseguimos preparar lembrancinhas, lanches e surpresas para todos com calma.</div>
     </details>
@@ -1680,13 +1711,29 @@ $('#btnMapa').href = CFG.linkMapa;
 $('#prazoRsvp').textContent = CFG.prazoRsvp;
 $('#faqPrazo').textContent = CFG.prazoRsvp;
 
+/* ------------- Verifica se o prazo de RSVP expirou ------------- */
+(()=>{
+  if(!CFG.prazoRsvpData) return;
+  const prazo = new Date(CFG.prazoRsvpData).getTime();
+  if(Date.now() > prazo){
+    const eyebrow = $('#rsvpEyebrow');
+    const title = $('#rsvpTitle');
+    const subtitle = $('#rsvpSubtitle');
+    const wrap = $('.rsvp-wrap');
+    if(eyebrow) eyebrow.textContent = 'Prazo de confirmação encerrado';
+    if(title) title.textContent = 'A tripulação já está completa!';
+    if(subtitle) subtitle.innerHTML = 'O prazo para confirmações terminou a <strong>' + CFG.prazoRsvp + '</strong>. Se ainda assim quiseres falar connosco, contacta-nos pelo WhatsApp.';
+    if(wrap) wrap.style.display = 'none';
+  }
+})();
+
 $('#contactWhats').textContent = CFG.whatsappLabel;
 $('#contactTel').textContent = CFG.whatsappLabel;
 $('#contactResp').textContent = CFG.responsavel;
 
 const waLink = 'https://wa.me/' + CFG.whatsapp.replace(/\D/g,'') + '?text=' + encodeURIComponent('Olá! Sobre a missão de aniversário do ' + CFG.nomeCrianca + ':');
 const telLink = 'tel:' + CFG.whatsapp.replace(/\s/g,'');
-$('#fabWa').href = waLink;
+const fabWaEl = $('#fabWa'); if(fabWaEl) fabWaEl.href = waLink;
 $('#lnkWhats').href = waLink;
 $('#lnkTel').href = telLink;
 $('#fYear').textContent = new Date().getFullYear();
