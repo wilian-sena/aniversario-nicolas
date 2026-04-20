@@ -15,7 +15,13 @@
       "mcp__Claude_in_Chrome__computer",
       "mcp__Claude_in_Chrome__form_input",
       "mcp__Claude_in_Chrome__find",
-      "mcp__Claude_in_Chrome__read_page"
+      "mcp__Claude_in_Chrome__read_page",
+      "Bash(python3)",
+      "Bash(python -c \"from PIL import Image; img = Image.open\\('images/nicolas.png'\\); img.convert\\('RGBA'\\).save\\('og-preview.webp', 'WEBP', quality=85\\); import os; print\\(f'✓ Conversão completa: {os.path.getsize\\(\\\\\"og-preview.webp\\\\\"\\)/1024:.1f} KB'\\)\")",
+      "Bash(python)",
+      "Bash(curl -s -I https://aniversario-nicolas-2026.netlify.app/og-preview.webp)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
