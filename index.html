@@ -1021,12 +1021,16 @@ details.faq-item summary::after{
   position:relative;
   transition:transform .3s,background .2s;
 }
-details.faq-item summary::before{
-  content:"";position:absolute;right:35px;
-  width:10px;height:2px;background:var(--cyan);border-radius:2px;
-  box-shadow:0 0 0 0 var(--cyan);
-}
 details.faq-item summary{position:relative}
+details.faq-item summary::after{
+  content:"";flex:none;
+  width:26px;height:26px;border-radius:50%;
+  background:rgba(124,240,255,.1);
+  border:1px solid rgba(124,240,255,.3);
+  position:relative;
+  transition:transform .3s,background .2s;
+  display:flex;align-items:center;justify-content:center;
+}
 details.faq-item summary i{
   position:absolute;right:16px;top:50%;
   width:14px;height:14px;
@@ -1034,6 +1038,7 @@ details.faq-item summary i{
   transition:transform .3s;
   display:flex;align-items:center;justify-content:center;
   color:var(--cyan);font-size:16px;line-height:1;
+  z-index:1;
 }
 details.faq-item summary i::before{
   content:"+";
