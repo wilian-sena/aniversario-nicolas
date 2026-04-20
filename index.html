@@ -265,28 +265,12 @@ input,textarea,select{font:inherit;color:inherit}
 
 /* RSVP — Astro guia */
 .astro-rsvp-guide{
-  position:static;
-  width:120px;
-  opacity:.9;
-  z-index:1;
-  pointer-events:none;
-  margin:0 0 -20px auto;
-  display:block;
-  filter:drop-shadow(0 20px 30px rgba(77,124,255,.5));
-  animation:astroFloatC 7s ease-in-out infinite;
+  display:none;
 }
 
 /* FAQ — Astro contemplativo */
 .astro-faq-sit{
-  position:relative;
-  width:200px;
-  opacity:.7;
-  z-index:0;
-  pointer-events:none;
-  margin:20px auto 0;
-  display:block;
-  filter:drop-shadow(0 15px 25px rgba(77,124,255,.35));
-  animation:astroFloatA 5.8s ease-in-out infinite;
+  display:none;
 }
 
 /* Gift — pinguim */
@@ -352,11 +336,6 @@ input,textarea,select{font:inherit;color:inherit}
 
 /* Mobile: reduzir/ocultar personagens decorativos que atrapalham UX */
 @media (max-width:720px){
-  .astro-faq-sit{display:block;width:150px;margin:20px auto 0;opacity:.6}
-  .astro-rsvp-guide{
-    width:100px;margin:0 0 -15px auto;
-    opacity:.85;
-  }
   .astro-gift{top:-32px;width:70px;right:10px}
   .tl-heroes-img{width:90px;top:-24px;right:-4px}
   .drift-penguin,.drift-bulldog{display:none}
@@ -1343,8 +1322,6 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
   </div>
 
   <div class="rsvp-wrap reveal">
-    <img class="astro-rsvp-guide" src="images/astro-main.webp" alt="" loading="lazy" decoding="async"
-         onerror="this.style.display='none'">
     <form id="rsvpForm" novalidate>
       <div id="formBody">
         <div class="field full">
@@ -1404,8 +1381,6 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
 
 <!-- ====================== FAQ ====================== -->
 <section class="section" id="faq">
-  <img class="astro-faq-sit" src="images/astro-sitting.webp" alt="" loading="lazy" decoding="async"
-       onerror="this.style.display='none'">
   <div class="section-head reveal">
     <div class="eyebrow">Perguntas frequentes</div>
     <h2>Dúvidas do comando</h2>
