@@ -68,12 +68,16 @@ Missão #07 do Astro Bot" />
    RESET + BASE
    ============================================================ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;overflow-anchor:none}
+@media (hover:hover) and (pointer:fine){
+  html{scroll-behavior:smooth}
+}
 body{
   font-family:"Space Grotesk","Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   background:#07081a;
   color:#eaf0ff;
   overflow-x:hidden;
+  overflow-anchor:none;
   line-height:1.55;
   min-height:100vh;
   -webkit-font-smoothing:antialiased;
@@ -448,10 +452,16 @@ input,textarea,select{font:inherit;color:inherit}
   margin:0 auto;
   position:relative;
 }
+@media (max-width:720px){
+  .section{padding:60px 18px}
+}
 .section-head{
   text-align:center;
   max-width:720px;
   margin:0 auto 56px;
+}
+@media (max-width:720px){
+  .section-head{margin:0 auto 32px}
 }
 .eyebrow{
   display:inline-flex;align-items:center;gap:8px;
@@ -486,9 +496,8 @@ h2{
    ============================================================ */
 .hero{
   position:relative;
-  min-height:100svh;
-  padding:130px 22px 60px;
-  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:40px 22px 60px;
+  display:flex;flex-direction:column;justify-content:flex-start;align-items:center;
   text-align:center;
   overflow:hidden;
   background:var(--grad-hero);
@@ -573,7 +582,9 @@ h2{
   line-height:.95;
   margin:6px 0 20px;
 }
-/* Nome em estilo logo AstroBot: chunky, off-white com contorno azul e ring de Saturno */
+/* Nome em estilo logo AstroBot: chunky italic com fade branco→ciano→violeta
+   conseguido via ::before (contorno azul + sombras 3D) e ::after (fill em gradiente).
+   Texto real transparente serve de forma para os dois pseudo-elementos. */
 .hero h1 .glitch{
   position:relative;
   display:inline-block;
@@ -581,7 +592,17 @@ h2{
   font-weight:900;
   font-style:italic;
   letter-spacing:.01em;
-  color:#f4f1e4;
+  color:transparent;
+  padding:.1em .15em .22em;
+  transform:rotate(-3deg);
+  filter:drop-shadow(0 18px 24px rgba(12,24,80,.55));
+}
+/* Camada 1 — contorno azul + profundidade 3D (fica por baixo) */
+.hero h1 .glitch::before{
+  content:attr(data-text);
+  position:absolute;
+  left:.15em;top:.1em;
+  color:#0f2560;
   -webkit-text-stroke:3px #1a3a8e;
   paint-order:stroke fill;
   text-shadow:
@@ -589,43 +610,60 @@ h2{
     0 6px 0 #0f2560,
     0 10px 22px rgba(76,118,255,.55),
     0 0 40px rgba(124,240,255,.35);
-  padding:.1em .15em .22em;
-  transform:rotate(-3deg);
-  filter:drop-shadow(0 18px 24px rgba(12,24,80,.55));
+  pointer-events:none;
+  z-index:0;
 }
-.hero h1 .glitch::before{
+/* Camada 2 — preenchimento em gradiente branco→ciano→violeta (fica por cima) */
+.hero h1 .glitch::after{
+  content:attr(data-text);
+  position:absolute;
+  left:.15em;top:.1em;
+  background:linear-gradient(135deg,#ffffff 0%,#7cf0ff 45%,#8b5cff 100%);
+  -webkit-background-clip:text;
+          background-clip:text;
+  -webkit-text-fill-color:transparent;
+  pointer-events:none;
+  z-index:2;
+}
+/* Wrapper opcional (anel de Saturno à volta do nome) */
+.hero h1 .glitch-wrap{
+  position:relative;
+  display:inline-block;
+  padding:0 .15em;
+}
+.hero h1 .glitch-wrap::before{
   content:"";
-  position:absolute;inset:-12% -8%;
-  border:6px solid #7cf0ff;
+  position:absolute;inset:-12% -4%;
+  border:5px solid #7cf0ff;
   border-radius:50%;
-  transform:rotate(-18deg) scaleY(.32);
+  transform:rotate(-18deg) scaleY(.34);
   box-shadow:0 0 22px rgba(124,240,255,.55),inset 0 0 12px rgba(124,240,255,.4);
   pointer-events:none;
-  z-index:-1;
+  z-index:0;
   opacity:.85;
 }
-.hero h1 .glitch::after{
+.hero h1 .glitch-wrap::after{
   content:"";
   position:absolute;
-  left:10%;right:10%;top:42%;
-  height:8px;
+  left:6%;right:6%;top:46%;
+  height:6px;
   background:linear-gradient(90deg,transparent 0%,#7cf0ff 20%,#fff 50%,#7cf0ff 80%,transparent 100%);
   border-radius:50%;
   transform:rotate(-18deg) scaleY(.5);
   filter:blur(2px);
-  opacity:.6;
+  opacity:.55;
   pointer-events:none;
-  z-index:2;
+  z-index:3;
 }
 @media (max-width:520px){
-  .hero h1 .glitch{
+  .hero h1 .glitch::before{
     -webkit-text-stroke:2px #1a3a8e;
     text-shadow:
       0 2px 0 #1a3a8e,
       0 4px 0 #0f2560,
       0 8px 18px rgba(76,118,255,.55);
   }
-  .hero h1 .glitch::before{border-width:4px}
+  .hero h1 .glitch-wrap::before{border-width:4px}
 }
 .hero h1 small{
   display:block;
@@ -1292,7 +1330,7 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
 
   <h1>
     <small>Convite para uma aventura galáctica</small>
-    <span class="glitch" id="heroNome">Nicolas</span>
+    <span class="glitch-wrap"><span class="glitch" id="heroNome" data-text="Nicolas">Nicolas</span></span>
   </h1>
 
   <p class="hero-tagline">
@@ -1694,7 +1732,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
 /* ------------- Injetar valores ------------- */
-$('#heroNome').textContent = CFG.nomeCrianca;
+(()=>{ const el = $('#heroNome'); el.textContent = CFG.nomeCrianca; el.setAttribute('data-text', CFG.nomeCrianca); })();
 $('#heroIdade').textContent = CFG.idade + ' anos';
 $('#heroData').textContent = CFG.dataLabel;
 $('#heroHora').textContent = CFG.horario;
@@ -1837,6 +1875,25 @@ const reduceMotion = matchMedia('(prefers-reduced-motion:reduce)').matches;
 const isCoarse = matchMedia('(pointer:coarse)').matches; // telemóvel / touch
 let mx = 0, my = 0, ticking = false;
 
+/* Guardar posição natural (sem transform) de cada .astro-layer para evitar
+   feedback loop entre getBoundingClientRect() e o transform aplicado.
+   Esta posição é recalculada em resize/load — nunca durante o scroll. */
+const layerMeta = new Map();
+function cacheLayerPositions(){
+  astroLayers.forEach(el=>{
+    // Zera o transform momentaneamente para medir a posição natural
+    const prev = el.style.transform;
+    el.style.transform = '';
+    const rect = el.getBoundingClientRect();
+    el.style.transform = prev;
+    layerMeta.set(el, {
+      top: rect.top + window.scrollY,
+      height: rect.height,
+      depth: parseFloat(el.dataset.depth) || 0.5,
+    });
+  });
+}
+
 function requestTick(){
   if(ticking) return;
   ticking = true;
@@ -1853,17 +1910,22 @@ function applyParallax(){
   nebs[2] && (nebs[2].style.transform = `translate(${-y*.02}px,${y*.03}px)`);
 
   // Astro layers — "sobem" conforme o scroll, com intensidade baseada em data-depth
+  // IMPORTANTE: usamos posição cacheada (não afetada pelo transform) para evitar
+  // feedback loop que provocava "saltos" durante o scroll em mobile.
   astroLayers.forEach(el=>{
-    const d = parseFloat(el.dataset.depth) || 0.5;
-    const rect = el.getBoundingClientRect();
+    const meta = layerMeta.get(el);
+    if(!meta) return;
+    const d = meta.depth;
+
+    // Distância (em px) do centro do elemento ao centro do viewport
+    const elCenterDoc = meta.top + meta.height / 2;
+    const viewportCenterDoc = y + vh / 2;
+    const distanceFromCenter = elCenterDoc - viewportCenterDoc;
 
     // Skip se totalmente fora do viewport (poupa CPU)
-    if(rect.bottom < -200 || rect.top > vh + 200){
+    if(distanceFromCenter > vh + 200 || distanceFromCenter < -vh - 200){
       return;
     }
-
-    const elCenter = rect.top + rect.height / 2;
-    const distanceFromCenter = elCenter - vh / 2;
 
     // Rise effect: o elemento translada contra o scroll com base na profundidade
     const tyScroll = -distanceFromCenter * d * 0.08;
@@ -1879,6 +1941,14 @@ function applyParallax(){
 }
 
 if(!reduceMotion){
+  // Cache inicial + recalcula em resize, load e quando fontes/imagens mudam o layout
+  cacheLayerPositions();
+  window.addEventListener('load', cacheLayerPositions);
+  window.addEventListener('resize', cacheLayerPositions, {passive:true});
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(cacheLayerPositions);
+  }
+
   window.addEventListener('scroll', requestTick, {passive:true});
   if(!isCoarse){
     window.addEventListener('mousemove', (e)=>{
