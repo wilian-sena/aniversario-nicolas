@@ -2016,17 +2016,24 @@ form.addEventListener('submit',e=>{
 
     const todosVao = criancas.every(c=>c.presenca === 'sim');
     if(todosVao){
-      successMsg.textContent = `Boa, ${primeiroNome}! Falta só um passo: envia-nos a confirmação pelo WhatsApp para garantirmos o vosso lugar.`;
+      successMsg.textContent = `Boa, ${primeiroNome}! A tua confirmação foi enviada para o WhatsApp! 🎯 Podes adicionar ao teu calendário abaixo.`;
       fireConfetti();
+
+      // Redirecionar automaticamente para WhatsApp após 1.5s
+      setTimeout(()=>{
+        window.open(waUrl, '_blank', 'noopener');
+      }, 1500);
     }else{
       successMsg.textContent = `Obrigado por avisares. Vamos sentir a vossa falta — fica para a próxima missão.`;
+      waLinkEl.style.display = 'none';
     }
-    waLinkEl.href = waUrl;
-    waLinkEl.style.display = 'inline-flex';
 
-    // Abrir WhatsApp automaticamente (funciona em mobile; em desktop o utilizador usa o botão)
-    const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
-    if(isMobile) window.open(waUrl,'_blank','noopener');
+    // Mostrar botão "Reenviar para WhatsApp" como alternativa (em caso de bloqueador de popups)
+    if(todosVao){
+      waLinkEl.href = waUrl;
+      waLinkEl.textContent = '↻ Reenviar para WhatsApp';
+      waLinkEl.style.display = 'inline-flex';
+    }
 
     ok.scrollIntoView({behavior:'smooth',block:'center'});
   },700);
