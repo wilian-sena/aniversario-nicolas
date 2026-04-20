@@ -262,6 +262,31 @@ input,textarea,select{font:inherit;color:inherit}
   filter:drop-shadow(0 20px 30px rgba(77,124,255,.45));
   animation:astroFloatB 6s ease-in-out infinite;
 }
+.tl-astro{
+  position:absolute;
+  width:95px;
+  height:auto;
+  opacity:.8;
+  pointer-events:none;
+  filter:drop-shadow(0 10px 18px rgba(124,240,255,.35));
+  z-index:1;
+}
+.tl-astro-sitting{
+  top:-24px;left:-16px;
+  animation:astroFloatA 6.5s ease-in-out infinite;
+}
+.tl-astro-penguin{
+  bottom:-28px;right:-12px;
+  animation:astroFloatB 5.4s ease-in-out infinite;
+}
+.tl-astro-main{
+  top:-20px;right:-14px;
+  animation:astroFloatA 6.5s ease-in-out infinite;
+}
+.tl-astro-bulldog{
+  bottom:-24px;left:-14px;
+  animation:astroFloatC 7.2s ease-in-out infinite;
+}
 
 /* RSVP — Astro guia */
 .astro-rsvp-guide{
@@ -495,6 +520,7 @@ h2{
 }
 
 .mission-badge{
+  position:relative;
   display:inline-flex;align-items:center;gap:10px;
   padding:8px 16px 8px 12px;
   background:rgba(10,14,40,.6);
@@ -504,6 +530,34 @@ h2{
   color:var(--ink-dim);
   backdrop-filter:blur(10px);
   margin-bottom:28px;
+  overflow:visible;
+}
+.badge-astro-penguin{
+  position:absolute;
+  top:-30px;right:-12px;
+  width:80px;
+  height:auto;
+  opacity:.85;
+  pointer-events:none;
+  filter:drop-shadow(0 8px 15px rgba(124,240,255,.3));
+  animation:astroFloatB 5.4s ease-in-out infinite;
+}
+
+/* Botão com imagem */
+.btn-wrapper{
+  position:relative;
+  display:inline-block;
+}
+.btn-astro-bulldog{
+  position:absolute;
+  bottom:-36px;left:-24px;
+  width:110px;
+  height:auto;
+  opacity:.9;
+  pointer-events:none;
+  filter:drop-shadow(0 12px 20px rgba(77,124,255,.4));
+  animation:astroFloatC 7.2s ease-in-out infinite;
+  z-index:1;
 }
 .mission-badge .dot{
   width:8px;height:8px;border-radius:50%;
@@ -593,6 +647,7 @@ h2{
 
 /* COUNTDOWN */
 .countdown{
+  position:relative;
   margin-top:48px;
   display:inline-flex;align-items:stretch;gap:8px;
   padding:14px;
@@ -601,6 +656,18 @@ h2{
   border-radius:22px;
   backdrop-filter:blur(14px);
   box-shadow:0 20px 50px -20px rgba(0,0,0,.6);
+  overflow:visible;
+}
+.countdown-astro-main{
+  position:absolute;
+  top:-60px;right:-30px;
+  width:150px;
+  height:auto;
+  opacity:.8;
+  pointer-events:none;
+  filter:drop-shadow(0 15px 30px rgba(124,240,255,.4));
+  animation:astroFloatA 6.5s ease-in-out infinite;
+  z-index:2;
 }
 .cd-group{display:flex;gap:8px}
 .countdown.ended{padding:20px 28px;flex-direction:column;align-items:center;gap:4px}
@@ -655,7 +722,29 @@ h2{
   border-radius:var(--radius);
   backdrop-filter:blur(10px);
   transition:transform .3s,border-color .3s,box-shadow .3s;
-  overflow:hidden;
+  overflow:visible;
+}
+.card-astro{
+  position:absolute;
+  width:100px;
+  height:auto;
+  opacity:.75;
+  pointer-events:none;
+  filter:drop-shadow(0 10px 18px rgba(124,240,255,.3));
+  animation:astroFloatA 6.5s ease-in-out infinite;
+  z-index:1;
+}
+.card-astro-penguin{
+  top:-24px;right:-16px;
+  animation:astroFloatB 5.4s ease-in-out infinite;
+}
+.card-astro-main{
+  bottom:-32px;right:-12px;
+  animation:astroFloatA 6.5s ease-in-out infinite;
+}
+.card-astro-bulldog{
+  top:-20px;left:-18px;
+  animation:astroFloatC 7.2s ease-in-out infinite;
 }
 .card::before{
   content:"";position:absolute;inset:-1px;border-radius:inherit;
@@ -716,7 +805,7 @@ h2{
   border:1px solid var(--stroke);
   border-radius:var(--radius);
   transition:transform .3s,border-color .3s;
-  overflow:hidden;
+  overflow:visible;
 }
 .tl-card::after{
   content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
@@ -1151,7 +1240,10 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
   <div class="orbit-ring ring-2" aria-hidden="true"></div>
   <div class="orbit-ring ring-3" aria-hidden="true"></div>
 
-  <div class="mission-badge"><span class="dot"></span>Missão #07 · A recrutar tripulação</div>
+  <div class="mission-badge">
+    <img class="badge-astro-penguin" src="images/astro-penguin.webp" alt="" loading="eager" decoding="async" onerror="this.style.display='none'">
+    <span class="dot"></span>Missão #07 · A recrutar tripulação
+  </div>
 
   <h1>
     <small>Convite para uma aventura galáctica</small>
@@ -1169,10 +1261,13 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
   </div>
 
   <div class="hero-cta">
-    <a href="#rsvp" class="btn btn-primary">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>
-      Confirmar presença
-    </a>
+    <div class="btn-wrapper">
+      <img class="btn-astro-bulldog" src="images/astro-bulldog.webp" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
+      <a href="#rsvp" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>
+        Confirmar presença
+      </a>
+    </div>
     <a href="#missao" class="btn btn-ghost">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
       Ver detalhes da missão
@@ -1210,6 +1305,7 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
 
   <!-- COUNTDOWN -->
   <div class="countdown" id="countdown" role="timer" aria-live="off" aria-label="Contagem decrescente para a festa">
+    <img class="countdown-astro-main" src="images/astro-main.webp" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
     <span class="countdown-label" id="cdLabel">Descolagem em</span>
     <div class="cd-group" aria-hidden="true">
       <div class="cd-unit"><span class="n" id="cdDias">00</span><span class="l">Dias</span></div>
@@ -1231,6 +1327,7 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
 
   <div class="cards">
     <div class="card reveal">
+      <img class="card-astro card-astro-penguin" src="images/astro-penguin.webp" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
       <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div>
       <h3>Data</h3>
       <div class="val"><strong id="infoData">—</strong></div>
@@ -1250,6 +1347,7 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
     </div>
 
     <div class="card reveal delay-2">
+      <img class="card-astro card-astro-main" src="images/astro-main.webp" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
       <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
       <h3>Base de operações</h3>
       <div class="val"><strong id="infoLocal">—</strong></div>
@@ -1267,6 +1365,7 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
     </div>
 
     <div class="card reveal delay-3">
+      <img class="card-astro card-astro-bulldog" src="images/astro-bulldog.webp" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
       <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M13 20c0-2.5 2-4.5 4.5-4.5S22 17.5 22 20"/></svg></div>
       <h3>Tripulação</h3>
       <div class="val"><strong id="infoFaixa">—</strong></div>
@@ -1292,6 +1391,7 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
 
   <div class="timeline">
     <div class="tl-card reveal">
+      <img class="tl-astro tl-astro-sitting" src="images/astro-sitting.webp" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
       <span class="tl-emoji" aria-hidden="true">🛸</span>
       <div class="tl-step">Etapa 01</div>
       <h3>Aterragem da tripulação</h3>
@@ -1306,18 +1406,21 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
       <p>Desafios, caça ao tesouro espacial e provas para ganhar pontos de aventura.</p>
     </div>
     <div class="tl-card reveal delay-2">
+      <img class="tl-astro tl-astro-penguin" src="images/astro-penguin.webp" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
       <span class="tl-emoji" aria-hidden="true">🍕</span>
       <div class="tl-step">Etapa 03</div>
       <h3>Abastecimento de energia</h3>
       <p>Lanche galáctico com petiscos para miúdos e graúdos recuperarem fôlego.</p>
     </div>
     <div class="tl-card reveal">
+      <img class="tl-astro tl-astro-main" src="images/astro-main.webp" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
       <span class="tl-emoji" aria-hidden="true">🎂</span>
       <div class="tl-step">Etapa 04</div>
       <h3>Parabéns & bolo estelar</h3>
       <p>O momento em que todas as naves se alinham para cantar e soprar velas.</p>
     </div>
     <div class="tl-card reveal delay-1">
+      <img class="tl-astro tl-astro-bulldog" src="images/astro-bulldog.webp" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">
       <span class="tl-emoji" aria-hidden="true">✨</span>
       <div class="tl-step">Etapa 05</div>
       <h3>Missão completa</h3>
