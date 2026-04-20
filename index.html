@@ -217,7 +217,7 @@ input,textarea,select{font:inherit;color:inherit}
   right:2%;top:8%;
   width:min(120px,28vw);
   opacity:.75;
-  z-index:2;
+  z-index:-1;
 }
 .astro-hero-bulldog-pos{
   left:2%;bottom:22%;
@@ -264,27 +264,27 @@ input,textarea,select{font:inherit;color:inherit}
 }
 .tl-astro{
   position:absolute;
-  width:95px;
+  width:70px;
   height:auto;
-  opacity:.8;
+  opacity:.7;
   pointer-events:none;
-  filter:drop-shadow(0 10px 18px rgba(124,240,255,.35));
-  z-index:1;
+  filter:drop-shadow(0 8px 14px rgba(124,240,255,.3));
+  z-index:0;
 }
 .tl-astro-sitting{
-  top:-24px;left:-16px;
+  top:-18px;right:-16px;
   animation:astroFloatA 6.5s ease-in-out infinite;
 }
 .tl-astro-penguin{
-  bottom:-28px;right:-12px;
+  top:-18px;left:-14px;
   animation:astroFloatB 5.4s ease-in-out infinite;
 }
 .tl-astro-main{
-  top:-20px;right:-14px;
+  top:-18px;right:-14px;
   animation:astroFloatA 6.5s ease-in-out infinite;
 }
 .tl-astro-bulldog{
-  bottom:-24px;left:-14px;
+  top:-18px;right:-14px;
   animation:astroFloatC 7.2s ease-in-out infinite;
 }
 
@@ -534,13 +534,14 @@ h2{
 }
 .badge-astro-penguin{
   position:absolute;
-  top:-30px;right:-12px;
-  width:80px;
+  top:-20px;right:-8px;
+  width:55px;
   height:auto;
-  opacity:.85;
+  opacity:.75;
   pointer-events:none;
-  filter:drop-shadow(0 8px 15px rgba(124,240,255,.3));
+  filter:drop-shadow(0 6px 12px rgba(124,240,255,.25));
   animation:astroFloatB 5.4s ease-in-out infinite;
+  z-index:10;
 }
 
 /* Botão com imagem */
@@ -550,14 +551,14 @@ h2{
 }
 .btn-astro-bulldog{
   position:absolute;
-  bottom:-36px;left:-24px;
-  width:110px;
+  bottom:-45px;left:-28px;
+  width:80px;
   height:auto;
-  opacity:.9;
+  opacity:.8;
   pointer-events:none;
-  filter:drop-shadow(0 12px 20px rgba(77,124,255,.4));
+  filter:drop-shadow(0 10px 16px rgba(77,124,255,.35));
   animation:astroFloatC 7.2s ease-in-out infinite;
-  z-index:1;
+  z-index:0;
 }
 .mission-badge .dot{
   width:8px;height:8px;border-radius:50%;
@@ -660,14 +661,14 @@ h2{
 }
 .countdown-astro-main{
   position:absolute;
-  top:-60px;right:-30px;
-  width:150px;
+  top:-55px;right:-38px;
+  width:120px;
   height:auto;
-  opacity:.8;
+  opacity:.75;
   pointer-events:none;
-  filter:drop-shadow(0 15px 30px rgba(124,240,255,.4));
+  filter:drop-shadow(0 12px 24px rgba(124,240,255,.35));
   animation:astroFloatA 6.5s ease-in-out infinite;
-  z-index:2;
+  z-index:0;
 }
 .cd-group{display:flex;gap:8px}
 .countdown.ended{padding:20px 28px;flex-direction:column;align-items:center;gap:4px}
@@ -726,24 +727,24 @@ h2{
 }
 .card-astro{
   position:absolute;
-  width:100px;
+  width:75px;
   height:auto;
-  opacity:.75;
+  opacity:.7;
   pointer-events:none;
-  filter:drop-shadow(0 10px 18px rgba(124,240,255,.3));
+  filter:drop-shadow(0 8px 14px rgba(124,240,255,.28));
   animation:astroFloatA 6.5s ease-in-out infinite;
-  z-index:1;
+  z-index:0;
 }
 .card-astro-penguin{
-  top:-24px;right:-16px;
+  top:-18px;right:-14px;
   animation:astroFloatB 5.4s ease-in-out infinite;
 }
 .card-astro-main{
-  bottom:-32px;right:-12px;
+  bottom:-24px;right:-10px;
   animation:astroFloatA 6.5s ease-in-out infinite;
 }
 .card-astro-bulldog{
-  top:-20px;left:-18px;
+  top:-16px;left:-20px;
   animation:astroFloatC 7.2s ease-in-out infinite;
 }
 .card::before{
