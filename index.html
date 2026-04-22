@@ -1564,7 +1564,14 @@ footer small{color:var(--ink-mute);font-size:12px;display:block;margin-top:20px}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
             Adicionar ao calendário
           </button>
+          <a id="successShareMural" href="#" class="btn btn-ghost" style="display:none" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51 8.59 10.49"/></svg>
+            Partilhar mural no grupo
+          </a>
         </div>
+        <p id="successShareHint" style="display:none;font-size:13px;color:var(--ink-dim);margin-top:10px;max-width:500px">
+          Partilha o link do mural no teu grupo de WhatsApp — quem abrir vê todas as mensagens que já existem e pode juntar a dele.
+        </p>
         <button type="button" class="again" id="btnReset">Enviar outra confirmação</button>
       </div>
     </form>
@@ -2204,6 +2211,17 @@ function buildWhatsAppMessage(criancas, telefone){
   if(document.getElementById('f-obs') && document.getElementById('f-obs').value.trim()){
     lines.push(`📝 Obs: ${document.getElementById('f-obs').value.trim()}`);
   }
+
+  // Link que propaga o mural de mensagens — quem clicar vê-o atualizado
+  try{
+    const shareUrl = buildMuralShareUrl();
+    if(shareUrl && shareUrl.includes('?m=')){
+      lines.push(``);
+      lines.push(`🎁 Mural de mensagens (partilha no grupo da família):`);
+      lines.push(shareUrl);
+    }
+  }catch{}
+
   return lines.join('\n');
 }
 
@@ -2270,6 +2288,19 @@ form.addEventListener('submit',e=>{
       waLinkEl.style.display = 'inline-flex';
     }
 
+    // Mostrar botão para partilhar o mural no grupo da família (se houver mensagens não-seed)
+    try{
+      const shareUrl = buildMuralShareUrl();
+      const shareBtn = $('#successShareMural');
+      const shareHint = $('#successShareHint');
+      if(shareUrl && shareUrl.includes('?m=') && shareBtn){
+        const waShareText = `Olha o mural de mensagens para o aniversário do Nicolas 🚀\n${shareUrl}`;
+        shareBtn.href = 'https://wa.me/?text=' + encodeURIComponent(waShareText);
+        shareBtn.style.display = 'inline-flex';
+        if(shareHint) shareHint.style.display = 'block';
+      }
+    }catch{}
+
     ok.scrollIntoView({behavior:'smooth',block:'center'});
   },700);
 });
@@ -2283,14 +2314,104 @@ $('#btnReset').addEventListener('click',()=>{
 });
 
 /* ============================================================
-   MURAL DE MENSAGENS
+   MURAL DE MENSAGENS — partilhado via URL (zero backend)
+   ------------------------------------------------------------
+   Como funciona:
+   1. Cada mensagem escrita no RSVP é guardada no localStorage
+      do convidado e junta-se ao link de WhatsApp que ele envia
+      aos pais do Nicolas.
+   2. O link de WhatsApp inclui ?m=<base64> com todas as
+      mensagens conhecidas. Quem abrir o link adiciona-as ao
+      seu mural local.
+   3. No ecrã de sucesso aparece um botão "Partilhar no grupo
+      da família" que reencaminha o mesmo link para qualquer
+      chat de WhatsApp — assim o mural circula organicamente.
+   4. Pré-semeamos com algumas mensagens temáticas para nunca
+      aparecer vazio na primeira visita.
    ============================================================ */
-const muralMessages = [];
+const MURAL_KEY = 'nicolas.mural.v1';
+const MURAL_MAX_IN_URL = 12;    // nº máx. de mensagens embebidas no link
+const MURAL_MAX_STORED = 200;   // cap defensivo no localStorage
+
+const MURAL_SEEDS = [
+  {autor:'Tripulação da frota', texto:'A missão começa em breve — parabéns adiantados, Nicolas! 🚀', ts:1, seed:true},
+  {autor:'Base Astro', texto:'Sete anos, sete estrelas, uma aventura inesquecível ✨', ts:2, seed:true},
+  {autor:'Comando Intergaláctico', texto:'Os motores já estão a aquecer para a festa 🎉', ts:3, seed:true},
+  {autor:'Esquadrão Explorador', texto:'Mal podemos esperar por ti na missão 💫', ts:4, seed:true},
+];
+
+function muralId(m){
+  const s = (m.autor||'') + '|' + (m.texto||'') + '|' + (m.ts||0);
+  let h = 0;
+  for(let i=0;i<s.length;i++){ h = ((h<<5)-h) + s.charCodeAt(i); h |= 0; }
+  return h.toString(36);
+}
+
+function loadMural(){
+  try{
+    const raw = localStorage.getItem(MURAL_KEY);
+    if(!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  }catch{ return []; }
+}
+
+function saveMural(msgs){
+  try{
+    const trimmed = msgs.slice(-MURAL_MAX_STORED);
+    localStorage.setItem(MURAL_KEY, JSON.stringify(trimmed));
+  }catch{}
+}
+
+function mergeMessages(existing, incoming){
+  const seen = new Set(existing.map(muralId));
+  const out = existing.slice();
+  incoming.forEach(m => {
+    if(!m || typeof m.autor !== 'string' || typeof m.texto !== 'string') return;
+    // sanitização básica: limitar tamanho
+    m.autor = m.autor.slice(0, 40);
+    m.texto = m.texto.slice(0, 300);
+    const id = muralId(m);
+    if(!seen.has(id)){
+      seen.add(id);
+      out.push(m);
+    }
+  });
+  return out.sort((a,b)=> (a.ts||0) - (b.ts||0));
+}
+
+// base64url encode/decode suportando UTF-8 (emojis, acentos)
+function encodeMuralForUrl(msgs){
+  const toShare = msgs
+    .filter(m => !m.seed)
+    .slice(-MURAL_MAX_IN_URL);
+  if(toShare.length === 0) return '';
+  try{
+    const json = JSON.stringify(toShare);
+    const bytes = unescape(encodeURIComponent(json));
+    return btoa(bytes).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }catch{ return ''; }
+}
+
+function decodeMuralFromUrl(param){
+  if(!param) return [];
+  try{
+    const b64 = param.replace(/-/g,'+').replace(/_/g,'/');
+    const bytes = atob(b64);
+    const json = decodeURIComponent(escape(bytes));
+    const arr = JSON.parse(json);
+    return Array.isArray(arr) ? arr : [];
+  }catch{ return []; }
+}
+
+let muralMessages = [];
 let currentMuralIndex = 0;
 let muralActive = false;
 
 function addMuralMessage(autor, texto){
-  muralMessages.push({autor, texto});
+  const msg = {autor, texto, ts: Date.now()};
+  muralMessages = mergeMessages(muralMessages, [msg]);
+  saveMural(muralMessages);
   if(!muralActive) rotateMuralMessages();
 }
 
@@ -2319,30 +2440,38 @@ function rotateMuralMessages(){
     muralDiv.style.display = 'flex';
 
     currentMuralIndex++;
-    setTimeout(showNext, 6000); // Muda a cada 6 segundos (duração da animação)
+    setTimeout(showNext, 6000);
   }
 
   showNext();
 }
 
-// Simular recebimento de mensagens a cada 8 segundos (exemplo)
-// Na prática, isto viria de um servidor/WebSocket
-const sampleMessages = [
-  {autor:'João Silva',texto:'Parabéns Nicolas! Que tenhas o melhor dia do mundo! 🎉'},
-  {autor:'Fernanda Costa',texto:'Te desejo tudo de bom, que sejas cada vez mais feliz! ✨'},
-  {autor:'Avó Maria',texto:'Espero que te diviertas muito nesta festa especial! 💕'},
-  {autor:'Tio Pedro',texto:'Muitos parabéns! Que este ano seja cheio de aventuras! 🚀'},
-];
+// URL partilhável com o estado atual do mural
+function buildMuralShareUrl(){
+  const encoded = encodeMuralForUrl(muralMessages);
+  const base = location.origin + location.pathname;
+  return encoded ? `${base}?m=${encoded}` : base;
+}
 
-// Exemplo: adicionar mensagens a cada 8 segundos
-let sampleIdx = 0;
-// Descomente para testar em desenvolvimento:
-// setInterval(()=>{
-//   if(sampleIdx < sampleMessages.length){
-//     addMuralMessage(sampleMessages[sampleIdx].autor, sampleMessages[sampleIdx].texto);
-//     sampleIdx++;
-//   }
-// }, 8000);
+// Inicialização: localStorage + seeds + ?m= do URL
+(function initMural(){
+  const stored = loadMural();
+  const base = stored.length ? stored : MURAL_SEEDS.slice();
+  const urlParams = new URLSearchParams(location.search);
+  const urlMsgs = decodeMuralFromUrl(urlParams.get('m'));
+  muralMessages = mergeMessages(base, urlMsgs);
+  if(urlMsgs.length){
+    saveMural(muralMessages);
+    // Limpar o ?m= da URL para não re-injetar ao recarregar
+    try{
+      urlParams.delete('m');
+      const qs = urlParams.toString();
+      const clean = location.pathname + (qs ? '?' + qs : '') + location.hash;
+      history.replaceState(null, '', clean);
+    }catch{}
+  }
+  if(muralMessages.length) rotateMuralMessages();
+})();
 
 /* ============================================================
    CONFETTI (canvas puro, leve)
