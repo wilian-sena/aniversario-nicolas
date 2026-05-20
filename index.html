@@ -2256,6 +2256,23 @@ form.addEventListener('submit',e=>{
   const msg = buildWhatsAppMessage(criancas, tel);
   const waUrl = 'https://wa.me/' + CFG.whatsapp.replace(/\D/g,'') + '?text=' + encodeURIComponent(msg);
 
+  const todosVao = criancas.every(c=>c.presenca === 'sim');
+
+  // IMPORTANTE (bug iOS): o window.open TEM de ser chamado de forma SÍNCRONA,
+  // ainda dentro do gesto do utilizador (o submit). Se for adiado por um
+  // setTimeout/Promise, o Safari do iOS descarta a "user activation" e bloqueia
+  // o popup silenciosamente — era esta a causa de "no iPhone não abre o WhatsApp".
+  // Não passamos o 3.º argumento de features ('noopener'), porque isso faz o iOS
+  // tratar como popup e agrava o bloqueio; a segurança é garantida anulando o
+  // opener logo a seguir.
+  let waWin = null;
+  if(todosVao){
+    try{
+      waWin = window.open(waUrl, '_blank');
+      if(waWin){ try{ waWin.opener = null; }catch{} }
+    }catch{ waWin = null; }
+  }
+
   setTimeout(()=>{
     btn.classList.remove('loading');
     btn.disabled = false;
@@ -2267,24 +2284,20 @@ form.addEventListener('submit',e=>{
     const successMsg = $('#successMsg');
     const waLinkEl = $('#successWaLink');
 
-    const todosVao = criancas.every(c=>c.presenca === 'sim');
     if(todosVao){
-      successMsg.textContent = `Boa, ${primeiroNome}! A tua confirmação foi enviada para o WhatsApp! 🎯 Podes adicionar ao teu calendário abaixo.`;
+      successMsg.textContent = waWin
+        ? `Boa, ${primeiroNome}! Abrimos o WhatsApp com a tua confirmação — é só tocar em enviar. Se não abriu, usa o botão abaixo. 🎯`
+        : `Boa, ${primeiroNome}! A tua confirmação está pronta — toca no botão abaixo para a enviar pelo WhatsApp. 🎯`;
       fireConfetti();
-
-      // Redirecionar automaticamente para WhatsApp após 1.5s
-      setTimeout(()=>{
-        window.open(waUrl, '_blank', 'noopener');
-      }, 1500);
     }else{
       successMsg.textContent = `Obrigado por avisares. Vamos sentir a vossa falta — fica para a próxima missão.`;
       waLinkEl.style.display = 'none';
     }
 
-    // Mostrar botão "Reenviar para WhatsApp" como alternativa (em caso de bloqueador de popups)
+    // Botão sempre visível: caminho garantido (clique direto = nunca bloqueado no iOS)
     if(todosVao){
       waLinkEl.href = waUrl;
-      waLinkEl.textContent = '↻ Reenviar para WhatsApp';
+      waLinkEl.textContent = waWin ? '↻ Reenviar pelo WhatsApp' : 'Abrir WhatsApp e enviar';
       waLinkEl.style.display = 'inline-flex';
     }
 
