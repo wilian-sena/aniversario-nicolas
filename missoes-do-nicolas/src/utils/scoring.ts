@@ -287,3 +287,58 @@ export function goalProgress(price: number, savedBalance: number): GoalProgress 
   const percent = price > 0 ? Math.min(100, (saved / price) * 100) : 0
   return { saved, price, missing, percent, reached: toCents(saved) >= toCents(price) }
 }
+
+export interface SaveBreakdown {
+  total: number
+  /** Parte comprometida com o objetivo — sai, mas com uma pergunta pelo meio. */
+  reserved: number
+  /** O que sobra acima do preço do objetivo — sai sem cerimónia. */
+  free: number
+}
+
+/**
+ * O cofrinho "Guardar" não é um cofre fechado: é dinheiro com um compromisso.
+ * Sem objetivo definido, está tudo livre.
+ */
+export function saveBreakdown(balance: number, goalPrice?: number): SaveBreakdown {
+  const total = Math.max(balance, 0)
+  const reserved = goalPrice ? fromCents(Math.min(toCents(total), toCents(goalPrice))) : 0
+  return { total, reserved, free: fromCents(toCents(total) - toCents(reserved)) }
+}
+
+/**
+ * Quantas semanas de poupança valem um determinado valor, ao ritmo atual.
+ * Serve para explicar a consequência de tirar dinheiro do Guardar.
+ */
+export function weeksOfSaving(amount: number, weeklyAllowance: number, savePercent: number): number {
+  const perWeek = (weeklyAllowance * savePercent) / 100
+  if (perWeek <= 0) return 0
+  return Math.ceil(amount / perWeek)
+}
+
+/** Movimentos de um cofrinho, do mais recente para o mais antigo. */
+export function walletTransactions(transactions: Transaction[], wallet: WalletId): Transaction[] {
+  return transactions
+    .filter((item) => item.wallet === wallet || item.toWallet === wallet)
+    .reverse()
+}
+
+/** Efeito de um movimento no saldo de um cofrinho (positivo entra, negativo sai). */
+export function transactionEffect(transaction: Transaction, wallet: WalletId): number {
+  if (transaction.type === 'transfer') {
+    const value = Math.abs(transaction.amount)
+    if (transaction.toWallet === wallet) return value
+    if (transaction.wallet === wallet) return -value
+    return 0
+  }
+  return transaction.wallet === wallet ? transaction.amount : 0
+}
+
+/** Total que saiu de um cofrinho (gastos, partilhas e transferências para fora). */
+export function totalSpent(transactions: Transaction[], wallet: WalletId): number {
+  const cents = transactions.reduce((acc, transaction) => {
+    const effect = toCents(transactionEffect(transaction, wallet))
+    return effect < 0 ? acc + effect : acc
+  }, 0)
+  return fromCents(Math.abs(cents))
+}

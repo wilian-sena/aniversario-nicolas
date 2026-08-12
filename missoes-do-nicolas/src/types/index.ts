@@ -123,6 +123,7 @@ export interface Wallet {
 }
 
 export type TransactionType =
+  | 'opening'
   | 'allowance'
   | 'extra_job'
   | 'spend'
@@ -142,6 +143,8 @@ export interface Transaction {
   /** Cofrinho de destino — apenas em transferências. */
   toWallet?: WalletId
   description: string
+  /** Etiqueta simples do gasto ou da partilha (ex.: "Cromos"). */
+  category?: string
   weekStart?: ISODate
 }
 
@@ -180,6 +183,8 @@ export interface WeeklyRecord {
   total: number
   distribution: Record<WalletId, number>
   closedAt: ISODateTime
+  /** Semana lançada à mão pelos pais (ex.: as que já tinham feito em papel). */
+  manual?: boolean
 }
 
 export interface AppSettings {
@@ -192,6 +197,8 @@ export interface AppSettings {
   celebrationsEnabled: boolean
   /** Streak discreto de dias consecutivos com todas as responsabilidades feitas. */
   showStreak: boolean
+  /** Esconde o cartão de arranque no Resumo dos pais. */
+  onboardingDismissed: boolean
 }
 
 export interface AppState {

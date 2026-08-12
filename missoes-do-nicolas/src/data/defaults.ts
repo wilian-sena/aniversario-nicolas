@@ -201,6 +201,25 @@ export const DEFAULT_WALLETS: Wallet[] = [
 
 export const GOAL_EMOJIS = ['🎮', '🧱', '🚲', '🎹', '⚽', '📚', '🛴', '🎁']
 
+/** Etiquetas rápidas para registar um gasto — evitam campos em branco. */
+export const SPEND_CATEGORIES = [
+  { label: 'Brinquedo', emoji: '🧸' },
+  { label: 'Cromos', emoji: '🃏' },
+  { label: 'Livro', emoji: '📚' },
+  { label: 'Guloseima', emoji: '🍬' },
+  { label: 'Jogo', emoji: '🎮' },
+  { label: 'Passeio', emoji: '🎡' },
+  { label: 'Outra coisa', emoji: '🛍️' },
+]
+
+/** Etiquetas rápidas para o cofrinho Partilhar. */
+export const SHARE_CATEGORIES = [
+  { label: 'Prenda para alguém', emoji: '🎁' },
+  { label: 'Ajudar alguém', emoji: '🤝' },
+  { label: 'Doação', emoji: '💝' },
+  { label: 'Outra coisa', emoji: '✨' },
+]
+
 export function createInitialState(now: Date = new Date()): AppState {
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -212,6 +231,7 @@ export function createInitialState(now: Date = new Date()): AppState {
       maxLearningStarsPerDay: 2,
       celebrationsEnabled: true,
       showStreak: true,
+      onboardingDismissed: false,
     },
     responsibilities: DEFAULT_RESPONSIBILITIES.map((item) => ({ ...item })),
     learningActivities: DEFAULT_LEARNING_ACTIVITIES.map((item) => ({ ...item })),

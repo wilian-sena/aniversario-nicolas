@@ -5,6 +5,8 @@ import { Card, Section } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { CloseWeekModal } from '../../components/parent/CloseWeekModal'
+import { WeekEditorModal } from '../../components/parent/WeekEditorModal'
+import { OpeningBalanceModal } from '../../components/parent/OpeningBalanceModal'
 import { GoalCard } from '../../components/child/GoalCard'
 import { EmptyState } from '../../components/ui/EmptyState'
 import {
@@ -24,9 +26,11 @@ interface SummaryPageProps {
 }
 
 export function SummaryPage({ onGoTo }: SummaryPageProps) {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
   const today = useToday()
   const [closing, setClosing] = useState(false)
+  const [editingWeek, setEditingWeek] = useState(false)
+  const [openingBalance, setOpeningBalance] = useState(false)
 
   const totals = useMemo(() => weekTotals(state), [state])
   const tier = tierForStars(state.rewardTiers, totals.totalStars)
@@ -37,6 +41,7 @@ export function SummaryPage({ onGoTo }: SummaryPageProps) {
   const goal = state.savingsGoals.find((item) => item.active)
 
   const weekIsOver = today > endOfWeek(state.currentWeekStart)
+  const showOnboarding = !state.settings.onboardingDismissed && state.weeklyRecords.length === 0
 
   return (
     <div className="space-y-7">
@@ -46,6 +51,34 @@ export function SummaryPage({ onGoTo }: SummaryPageProps) {
           Semana de {formatWeekRange(state.currentWeekStart)}
         </p>
       </header>
+
+      {showOnboarding && (
+        <div className="rounded-[var(--radius-card)] bg-brand-50 p-4 ring-1 ring-brand-100">
+          <p className="font-extrabold text-brand-700">
+            <span aria-hidden="true">👋 </span>Começaram a meio da semana?
+          </p>
+          <p className="mt-1 text-sm text-ink-soft">
+            Nada do que o {state.profile.name} já fez se perde: registem os dias que já passaram e o
+            dinheiro que ele já tinha.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={() => setEditingWeek(true)}>
+              📝 Registar o que já foi feito
+            </Button>
+            <Button variant="secondary" onClick={() => setOpeningBalance(true)}>
+              🏁 Definir saldo inicial
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                dispatch({ type: 'settings/update', patch: { onboardingDismissed: true } })
+              }
+            >
+              Já está
+            </Button>
+          </div>
+        </div>
+      )}
 
       {weekIsOver && (
         <div className="rounded-[var(--radius-card)] bg-star-50 p-4 ring-1 ring-star-100">
@@ -90,9 +123,14 @@ export function SummaryPage({ onGoTo }: SummaryPageProps) {
               ? `Faltam ${upcoming.starsMissing} ⭐ para "${upcoming.tier.name}": ${upcoming.tier.privilege}.`
               : 'Nível máximo atingido esta semana.'}
           </p>
-          <Button size="lg" block onClick={() => setClosing(true)}>
-            <span aria-hidden="true">🏁</span> Fechar semana
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button size="lg" className="flex-1" onClick={() => setClosing(true)}>
+              <span aria-hidden="true">🏁</span> Fechar semana
+            </Button>
+            <Button size="lg" variant="secondary" onClick={() => setEditingWeek(true)}>
+              <span aria-hidden="true">📝</span> Editar dias
+            </Button>
+          </div>
         </Card>
       </Section>
 
@@ -155,6 +193,8 @@ export function SummaryPage({ onGoTo }: SummaryPageProps) {
       </Section>
 
       <CloseWeekModal open={closing} onClose={() => setClosing(false)} />
+      <WeekEditorModal open={editingWeek} onClose={() => setEditingWeek(false)} />
+      {openingBalance && <OpeningBalanceModal onClose={() => setOpeningBalance(false)} />}
     </div>
   )
 }

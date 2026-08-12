@@ -3,13 +3,20 @@ import { appReducer } from '../state/appReducer'
 import { createInitialState } from '../data/defaults'
 import { closeWeek, buildWeekClosePreview } from '../services/weekService'
 import { formatEuro, splitByPercent, sumMoney } from '../utils/money'
-import { totalBalance, walletBalances, weekExtrasEarned, weekTotals } from '../utils/scoring'
+import {
+  tierForStars,
+  totalBalance,
+  walletBalances,
+  weekExtrasEarned,
+  weekTotals,
+} from '../utils/scoring'
 import { addDays, startOfWeek, today, weekDays } from '../utils/date'
 import type { AppState } from '../types'
 
 // Datas relativas à semana atual: os trabalhos extra são sempre registados na
 // semana em que são aceites, por isso os testes acompanham o calendário real.
-const MONDAY = startOfWeek(today())
+const TODAY = today()
+const MONDAY = startOfWeek(TODAY)
 const SUNDAY = addDays(MONDAY, 6)
 const NEXT_MONDAY = addDays(MONDAY, 7)
 const NOW = new Date()
@@ -96,35 +103,15 @@ describe('11. divisão 50/40/10', () => {
 })
 
 describe('12–15. fechar a semana', () => {
+  /**
+   * Semana com tudo marcado nos dias que já aconteceram — não se marcam dias
+   * futuros, por isso o total depende do dia em que os testes correm.
+   */
   function closedState() {
     let state = baseState()
-    // Semana completa de responsabilidades e aprendizagem.
     for (const date of weekDays(MONDAY)) {
-      for (const responsibility of state.responsibilities) {
-        if (responsibility.mode === 'twice') {
-          state = appReducer(state, {
-            type: 'responsibility/toggle',
-            responsibilityId: responsibility.id,
-            date,
-            part: 'morning',
-          })
-          state = appReducer(state, {
-            type: 'responsibility/toggle',
-            responsibilityId: responsibility.id,
-            date,
-            part: 'night',
-          })
-        } else {
-          state = appReducer(state, {
-            type: 'responsibility/toggle',
-            responsibilityId: responsibility.id,
-            date,
-          })
-        }
-      }
-      for (const activity of state.learningActivities) {
-        state = appReducer(state, { type: 'learning/toggle', activityId: activity.id, date })
-      }
+      if (date > TODAY) continue
+      state = appReducer(state, { type: 'day/fill', date })
     }
     state = doJob(state, 'job_aspirar') // 1,00
     state = doJob(state, 'job_varanda') // 1,00
@@ -134,13 +121,32 @@ describe('12–15. fechar a semana', () => {
   it('12. guarda o resumo e distribui o dinheiro', () => {
     const state = closedState()
     const record = state.weeklyRecords[0]
-    expect(record.totalStars).toBe(56)
-    expect(record.tierName).toBe('Semana extraordinária')
+    const daysMarked = weekDays(MONDAY).filter((date) => date <= TODAY).length
+
+    // 6 responsabilidades + 2 de aprendizagem por cada dia já marcado.
+    expect(record.totalStars).toBe(daysMarked * 8)
+    expect(record.maxStars).toBe(56)
+    expect(record.tierName).toBe(tierForStars(state.rewardTiers, record.totalStars)?.name)
     expect(record.chosenPrivilege).toBe('Acampamento na sala')
     expect(record.allowance).toBe(3)
     expect(record.extras).toBe(2)
     expect(record.total).toBe(5)
     expect(record.distribution).toEqual({ spend: 2.5, save: 2, share: 0.5 })
+  })
+
+  it('12b. uma semana perfeita fica registada como 56 estrelas e nível máximo', () => {
+    // Semana já passada: dá para marcar os sete dias.
+    const pastMonday = addDays(MONDAY, -7)
+    let state = { ...baseState(), currentWeekStart: pastMonday }
+    for (const date of weekDays(pastMonday)) {
+      state = appReducer(state, { type: 'day/fill', date })
+    }
+
+    const record = closeWeek(state, { now: NOW }).weeklyRecords[0]
+    expect(record.totalStars).toBe(56)
+    expect(record.responsibilityStars).toBe(42)
+    expect(record.learningStars).toBe(14)
+    expect(record.tierName).toBe('Semana extraordinária')
   })
 
   it('13. guarda o histórico', () => {

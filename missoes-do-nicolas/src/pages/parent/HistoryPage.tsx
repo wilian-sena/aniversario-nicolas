@@ -1,14 +1,26 @@
+import { useState } from 'react'
 import { useApp } from '../../hooks/useApp'
 import { Card, Section } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ProgressBar } from '../../components/ui/ProgressBar'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
+import { ManualWeekModal } from '../../components/parent/ManualWeekModal'
 import { formatEuro } from '../../utils/money'
 import { formatWeekRange } from '../../utils/date'
 import { cn } from '../../utils/cn'
 
 export function HistoryPage() {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
+  const [adding, setAdding] = useState(false)
+  const [removing, setRemoving] = useState<string | null>(null)
   const records = [...state.weeklyRecords].sort((a, b) => b.weekStart.localeCompare(a.weekStart))
+
+  const addButton = (
+    <Button variant="secondary" block size="lg" onClick={() => setAdding(true)}>
+      <span aria-hidden="true">➕</span> Adicionar semana anterior
+    </Button>
+  )
 
   if (records.length === 0) {
     return (
@@ -17,8 +29,10 @@ export function HistoryPage() {
         <EmptyState
           emoji="📅"
           title="Ainda não há semanas fechadas"
-          description="Quando fecharem a primeira semana, o resumo fica guardado aqui."
+          description="Quando fecharem a primeira semana, o resumo fica guardado aqui. Também podem lançar à mão as semanas que já fizeram em papel."
         />
+        {addButton}
+        {adding && <ManualWeekModal onClose={() => setAdding(false)} />}
       </div>
     )
   }
@@ -29,6 +43,8 @@ export function HistoryPage() {
   return (
     <div className="space-y-7">
       <Header count={records.length} />
+
+      {addButton}
 
       <Section title="Evolução" emoji="📈" hint="Estrelas por semana.">
         <Card>
@@ -59,7 +75,14 @@ export function HistoryPage() {
             <Card as="li" key={record.id} className="space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-lg font-extrabold">Semana {formatWeekRange(record.weekStart)}</p>
+                  <p className="text-lg font-extrabold">
+                    Semana {formatWeekRange(record.weekStart)}
+                    {record.manual && (
+                      <span className="ml-2 rounded-full bg-cloud px-2 py-0.5 align-middle text-xs font-bold text-ink-soft">
+                        registo manual
+                      </span>
+                    )}
+                  </p>
                   <p className="text-sm font-bold text-ink-soft">
                     <span aria-hidden="true">{record.tierEmoji} </span>
                     {record.tierName}
@@ -94,10 +117,32 @@ export function HistoryPage() {
                   {formatEuro(record.distribution.share)}
                 </p>
               </div>
+
+              {record.manual && (
+                <Button size="sm" variant="ghost" onClick={() => setRemoving(record.id)}>
+                  🗑️ Apagar registo
+                </Button>
+              )}
             </Card>
           ))}
         </ul>
       </Section>
+
+      {adding && <ManualWeekModal onClose={() => setAdding(false)} />}
+
+      <ConfirmDialog
+        open={Boolean(removing)}
+        title="Apagar registo manual?"
+        emoji="🗑️"
+        tone="danger"
+        description="A semana sai do histórico. Os movimentos de dinheiro que tenham sido criados mantêm-se — se for preciso, apaguem-nos em Dinheiro."
+        confirmLabel="Apagar"
+        onConfirm={() => {
+          if (removing) dispatch({ type: 'history/remove', id: removing })
+          setRemoving(null)
+        }}
+        onCancel={() => setRemoving(null)}
+      />
     </div>
   )
 }

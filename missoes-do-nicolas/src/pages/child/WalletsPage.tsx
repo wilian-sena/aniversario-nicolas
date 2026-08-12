@@ -1,27 +1,29 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useApp } from '../../hooks/useApp'
 import { Card, Section } from '../../components/ui/Card'
 import { WalletCard } from '../../components/child/WalletCard'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { TransactionList } from '../../components/ui/TransactionList'
 import { formatEuro } from '../../utils/money'
-import { totalBalance, walletBalances, weekMoney } from '../../utils/scoring'
-import { formatDateTime } from '../../utils/date'
-
-const TYPE_LABELS: Record<string, { label: string; emoji: string }> = {
-  allowance: { label: 'Semanada', emoji: '📅' },
-  extra_job: { label: 'Trabalho extra', emoji: '🧹' },
-  spend: { label: 'Gasto', emoji: '🛍️' },
-  transfer: { label: 'Transferência', emoji: '🔁' },
-  saving: { label: 'Poupança', emoji: '🏦' },
-  share_use: { label: 'Partilhar', emoji: '💝' },
-  adjustment: { label: 'Ajuste dos pais', emoji: '✏️' },
-}
+import {
+  saveBreakdown,
+  totalBalance,
+  totalSpent,
+  walletBalances,
+  walletTransactions,
+  weekMoney,
+} from '../../utils/scoring'
+import type { WalletId } from '../../types'
+import { cn } from '../../utils/cn'
 
 export function WalletsPage() {
   const { state } = useApp()
   const balances = useMemo(() => walletBalances(state.transactions), [state.transactions])
   const money = weekMoney(state)
-  const recent = [...state.transactions].reverse().slice(0, 12)
+  const goal = state.savingsGoals.find((item) => item.active)
+  const [openWallet, setOpenWallet] = useState<WalletId | null>(null)
+
+  const breakdown = saveBreakdown(balances.save, goal?.price)
 
   return (
     <div className="space-y-7">
@@ -45,16 +47,60 @@ export function WalletsPage() {
         </Card>
       </Section>
 
-      <Section title="Cofrinhos" emoji="🐷">
+      <Section title="Cofrinhos" emoji="🐷" hint="Toca num cofrinho para veres o que entrou e saiu.">
         <div className="grid gap-3 sm:grid-cols-3">
-          {state.wallets.map((wallet) => (
-            <WalletCard key={wallet.id} wallet={wallet} balance={balances[wallet.id]} />
-          ))}
+          {state.wallets.map((wallet) => {
+            const movements = walletTransactions(state.transactions, wallet.id)
+            const spent = totalSpent(state.transactions, wallet.id)
+            const isOpen = openWallet === wallet.id
+            return (
+              <div key={wallet.id} className="space-y-2">
+                <WalletCard
+                  wallet={wallet}
+                  balance={balances[wallet.id]}
+                  reserved={wallet.id === 'save' ? breakdown.reserved : undefined}
+                  goalName={wallet.id === 'save' ? goal?.name : undefined}
+                />
+                <button
+                  type="button"
+                  onClick={() => setOpenWallet(isOpen ? null : wallet.id)}
+                  aria-expanded={isOpen}
+                  className={cn(
+                    'min-h-11 w-full rounded-2xl px-3 text-sm font-bold ring-1 transition',
+                    isOpen
+                      ? 'bg-brand-50 text-brand-700 ring-brand-100'
+                      : 'bg-paper text-ink-soft ring-black/10 hover:bg-cloud',
+                  )}
+                >
+                  {isOpen ? 'Fechar' : `Ver movimentos (${movements.length})`}
+                  {spent > 0 && !isOpen && (
+                    <span className="ml-1 text-berry-700">· já saíram {formatEuro(spent)}</span>
+                  )}
+                </button>
+
+                {isOpen && (
+                  <Card className="animate-rise-fade">
+                    {movements.length === 0 ? (
+                      <p className="text-sm text-ink-soft">
+                        Ainda não há movimentos neste cofrinho.
+                      </p>
+                    ) : (
+                      <TransactionList
+                        transactions={movements}
+                        wallets={state.wallets}
+                        perspective={wallet.id}
+                      />
+                    )}
+                  </Card>
+                )}
+              </div>
+            )
+          })}
         </div>
       </Section>
 
       <Section title="Últimos movimentos" emoji="🧾">
-        {recent.length === 0 ? (
+        {state.transactions.length === 0 ? (
           <EmptyState
             emoji="🪙"
             title="Ainda não há movimentos"
@@ -62,35 +108,10 @@ export function WalletsPage() {
           />
         ) : (
           <Card>
-            <ul className="divide-y divide-black/5">
-              {recent.map((transaction) => {
-                const meta = TYPE_LABELS[transaction.type] ?? { label: transaction.type, emoji: '•' }
-                const wallet = state.wallets.find((item) => item.id === transaction.wallet)
-                return (
-                  <li key={transaction.id} className="flex items-center gap-3 py-2.5">
-                    <span className="text-xl" aria-hidden="true">
-                      {meta.emoji}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold">{transaction.description}</p>
-                      <p className="text-xs text-ink-soft">
-                        {meta.label} · {wallet?.label} · {formatDateTime(transaction.date)}
-                      </p>
-                    </div>
-                    <span
-                      className={
-                        transaction.amount < 0
-                          ? 'shrink-0 font-black text-berry-700'
-                          : 'shrink-0 font-black text-grow-700'
-                      }
-                    >
-                      {transaction.amount < 0 ? '' : '+'}
-                      {formatEuro(transaction.amount)}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
+            <TransactionList
+              transactions={[...state.transactions].reverse().slice(0, 12)}
+              wallets={state.wallets}
+            />
           </Card>
         )}
       </Section>
@@ -115,7 +136,11 @@ function Row({
         <span aria-hidden="true">{emoji} </span>
         {label}
       </span>
-      <span className={strong ? 'text-2xl font-black text-coin-700' : 'text-lg font-black'}>
+      <span
+        className={
+          strong ? 'text-2xl font-black text-coin-700 tabular-nums' : 'text-lg font-black tabular-nums'
+        }
+      >
         {formatEuro(value)}
       </span>
     </div>

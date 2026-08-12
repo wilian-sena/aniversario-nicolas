@@ -9,6 +9,7 @@ import type { AppAction } from './actions'
 import { createInitialState } from '../data/defaults'
 import { closeWeek } from '../services/weekService'
 import { startOfWeek, today } from '../utils/date'
+import { activeLearningActivities, activeResponsibilities } from '../utils/scoring'
 import { createId } from '../utils/id'
 import { roundMoney } from '../utils/money'
 
@@ -21,9 +22,13 @@ function toggleResponsibility(
   responsibilityId: string,
   date: string,
   part?: 'morning' | 'night',
+  byParent = false,
 ): AppState {
   const responsibility = state.responsibilities.find((item) => item.id === responsibilityId)
   if (!responsibility) return state
+  // Não se marcam dias que ainda não aconteceram.
+  if (date > today()) return state
+  const needsApproval = responsibility.requiresApproval && !byParent
 
   const existing = state.responsibilityCompletions.find(
     (item) => item.responsibilityId === responsibilityId && item.date === date,
@@ -48,10 +53,9 @@ function toggleResponsibility(
       morning,
       night,
       done,
-      status: done && responsibility.requiresApproval ? 'pending' : 'approved',
+      status: done && needsApproval ? 'pending' : 'approved',
       markedAt: existing?.markedAt ?? nowISO,
-      approvedAt:
-        done && !responsibility.requiresApproval ? (existing?.approvedAt ?? nowISO) : undefined,
+      approvedAt: done && !needsApproval ? (existing?.approvedAt ?? nowISO) : undefined,
     }
     return stamp({ ...state, responsibilityCompletions: [...others, completion] })
   }
@@ -68,16 +72,23 @@ function toggleResponsibility(
     morning: false,
     night: false,
     done: true,
-    status: responsibility.requiresApproval ? 'pending' : 'approved',
+    status: needsApproval ? 'pending' : 'approved',
     markedAt: nowISO,
-    approvedAt: responsibility.requiresApproval ? undefined : nowISO,
+    approvedAt: needsApproval ? undefined : nowISO,
   }
   return stamp({ ...state, responsibilityCompletions: [...others, completion] })
 }
 
-function toggleLearning(state: AppState, activityId: string, date: string): AppState {
+function toggleLearning(
+  state: AppState,
+  activityId: string,
+  date: string,
+  byParent = false,
+): AppState {
   const activity = state.learningActivities.find((item) => item.id === activityId)
   if (!activity) return state
+  if (date > today()) return state
+  const needsApproval = activity.requiresApproval && !byParent
 
   const existing = state.learningCompletions.find(
     (item) => item.activityId === activityId && item.date === date,
@@ -94,18 +105,93 @@ function toggleLearning(state: AppState, activityId: string, date: string): AppS
     id: createId('lc'),
     activityId,
     date,
-    status: activity.requiresApproval ? 'pending' : 'approved',
+    status: needsApproval ? 'pending' : 'approved',
     markedAt: nowISO,
-    approvedAt: activity.requiresApproval ? undefined : nowISO,
+    approvedAt: needsApproval ? undefined : nowISO,
   }
   return stamp({ ...state, learningCompletions: [...state.learningCompletions, completion] })
+}
+
+/**
+ * "Marcar tudo" num dia: todas as responsabilidades e as atividades de
+ * aprendizagem necessárias para chegar ao limite diário — nunca mais do que
+ * isso, para o atalho não inventar estrelas que a app não daria.
+ */
+function fillDay(state: AppState, date: string): AppState {
+  if (date > today()) return state
+  const nowISO = new Date().toISOString()
+
+  const completions = [...state.responsibilityCompletions.filter((item) => item.date !== date)]
+  for (const responsibility of activeResponsibilities(state)) {
+    const existing = state.responsibilityCompletions.find(
+      (item) => item.responsibilityId === responsibility.id && item.date === date,
+    )
+    completions.push({
+      id: existing?.id ?? createId('rc'),
+      responsibilityId: responsibility.id,
+      date,
+      morning: responsibility.mode === 'twice',
+      night: responsibility.mode === 'twice',
+      done: true,
+      status: 'approved',
+      markedAt: existing?.markedAt ?? nowISO,
+      approvedAt: nowISO,
+    })
+  }
+
+  const activities = activeLearningActivities(state)
+  const already = state.learningCompletions.filter((item) => item.date === date)
+  const learning = [...state.learningCompletions]
+  let counted = already.length
+  for (const activity of activities) {
+    if (counted >= state.settings.maxLearningStarsPerDay) break
+    if (already.some((item) => item.activityId === activity.id)) continue
+    learning.push({
+      id: createId('lc'),
+      activityId: activity.id,
+      date,
+      status: 'approved',
+      markedAt: nowISO,
+      approvedAt: nowISO,
+    })
+    counted += 1
+  }
+  // As que já estavam marcadas mas à espera de aprovação passam a aprovadas.
+  const learningApproved = learning.map((item) =>
+    item.date === date && item.status === 'pending'
+      ? { ...item, status: 'approved' as const, approvedAt: nowISO }
+      : item,
+  )
+
+  return stamp({
+    ...state,
+    responsibilityCompletions: completions,
+    learningCompletions: learningApproved,
+  })
+}
+
+/** Limpa por completo um dia (usado quando os pais se enganam a registar). */
+function clearDay(state: AppState, date: string): AppState {
+  return stamp({
+    ...state,
+    responsibilityCompletions: state.responsibilityCompletions.filter(
+      (item) => item.date !== date,
+    ),
+    learningCompletions: state.learningCompletions.filter((item) => item.date !== date),
+  })
 }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     /* ---------------- Responsabilidades ---------------- */
     case 'responsibility/toggle':
-      return toggleResponsibility(state, action.responsibilityId, action.date, action.part)
+      return toggleResponsibility(
+        state,
+        action.responsibilityId,
+        action.date,
+        action.part,
+        action.byParent,
+      )
 
     case 'responsibility/approve':
       return stamp({
@@ -148,7 +234,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     /* ---------------- Aprendizagem ---------------- */
     case 'learning/toggle':
-      return toggleLearning(state, action.activityId, action.date)
+      return toggleLearning(state, action.activityId, action.date, action.byParent)
+
+    case 'day/fill':
+      return fillDay(state, action.date)
+
+    case 'day/clear':
+      return clearDay(state, action.date)
 
     case 'learning/approve':
       return stamp({
@@ -299,6 +391,23 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         transactions: state.transactions.filter((item) => item.id !== action.id),
       })
 
+    case 'money/setOpeningBalance': {
+      const nowISO = new Date().toISOString()
+      // Substitui o saldo inicial anterior em vez de somar outro por cima.
+      const withoutOpening = state.transactions.filter((item) => item.type !== 'opening')
+      const openings: Transaction[] = state.wallets
+        .filter((wallet) => roundMoney(action.amounts[wallet.id] ?? 0) !== 0)
+        .map((wallet) => ({
+          id: createId('tx'),
+          date: nowISO,
+          amount: roundMoney(action.amounts[wallet.id]),
+          type: 'opening',
+          wallet: wallet.id,
+          description: action.description,
+        }))
+      return stamp({ ...state, transactions: [...openings, ...withoutOpening] })
+    }
+
     /* ---------------- Objetivo de poupança ---------------- */
     case 'goal/save': {
       const exists = state.savingsGoals.some((item) => item.id === action.goal.id)
@@ -351,6 +460,39 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     /* ---------------- Semana ---------------- */
     case 'week/close':
       return closeWeek(state, { chosenPrivilege: action.chosenPrivilege })
+
+    /* ---------------- Histórico ---------------- */
+    case 'history/addManual': {
+      const { record, createTransactions } = action
+      const transactions: Transaction[] = []
+      if (createTransactions) {
+        const nowISO = new Date().toISOString()
+        for (const wallet of state.wallets) {
+          const amount = roundMoney(record.distribution[wallet.id] ?? 0)
+          if (amount === 0) continue
+          transactions.push({
+            id: createId('tx'),
+            date: nowISO,
+            amount,
+            type: 'adjustment',
+            wallet: wallet.id,
+            description: `Semana de ${record.weekStart} (registo manual)`,
+            weekStart: record.weekStart,
+          })
+        }
+      }
+      return stamp({
+        ...state,
+        transactions: [...state.transactions, ...transactions],
+        weeklyRecords: [...state.weeklyRecords, record],
+      })
+    }
+
+    case 'history/remove':
+      return stamp({
+        ...state,
+        weeklyRecords: state.weeklyRecords.filter((item) => item.id !== action.id),
+      })
 
     /* ---------------- Configurações e dados ---------------- */
     case 'settings/update':

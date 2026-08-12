@@ -27,6 +27,31 @@ depende do número de estrelas. A mensagem que a app transmite não é "faço se
 - máximo 2 estrelas de aprendizagem × 7 dias = **14 estrelas**
 - total possível: **56 estrelas por semana** (segunda a domingo)
 
+## Começar a meio da semana (ou vindo do papel)
+
+Nada do que já foi feito se perde:
+
+- **Registar dias que já passaram** — Pais → Resumo → *Editar dias*. Escolhe-se o dia (os dias
+  futuros estão bloqueados) e marca-se o que foi feito, com atalhos *Marcar tudo* e *Limpar dia*.
+  O que um adulto marca fica aprovado à partida.
+- **Saldo inicial** — Pais → Dinheiro → *Definir saldo inicial*. O crédito que a criança já tinha,
+  indicado como valor total (dividido pelas percentagens) ou cofrinho a cofrinho. Não conta como
+  ganho da semana e pode ser corrigido, porque substitui sempre o anterior.
+- **Semanas anteriores** — Pais → Histórico → *Adicionar semana anterior*, para trazer para a app
+  as semanas já feitas em papel, com a opção "este dinheiro já foi entregue".
+
+## Gastos, partilha e a regra do Guardar
+
+Cada cofrinho tem o seu botão *Tirar de…* em Pais → Dinheiro, com etiquetas rápidas (cromos,
+guloseima, prenda para alguém…) e descrição — tudo fica no livro de movimentos, que o Nicolas
+também vê no seu ecrã de Cofrinhos.
+
+O **Guardar** não está bloqueado nem é livre: o saldo divide-se em **reservado** (comprometido com
+o objetivo) e **livre** (o que excede o preço). Tirar da parte reservada é possível, mas mostra a
+consequência em linguagem simples — *"ficam €2,80 guardados, faltam €32,20, cerca de 27 semanas"* —
+e obriga a escolher o destino: passar para Gastar ou sair mesmo. Poupar deixa de ser uma prisão e
+continua a ter peso.
+
 ## Como executar localmente
 
 ```bash
@@ -105,3 +130,9 @@ manhã+noite, limite de 2 estrelas de aprendizagem por dia, cálculo das 56 estr
 de recompensa e estrelas em falta, fluxo completo dos trabalhos extra, soma do dinheiro,
 divisão 50/40/10 sem perder cêntimos, fecho de semana, histórico, nova semana, saldos e
 objetivo mantidos, recarregamento sem perda de dados, exportação e importação.
+
+Cobre ainda o registo retroativo e o controlo de gastos: marcar dias passados, recusa de dias
+futuros, marcação de adulto aprovada à partida, o atalho *Marcar tudo* respeitar o limite diário,
+saldo inicial (entra, substitui, não conta como ganho da semana, sobrevive ao fecho), gastos e
+partilhas a reduzirem o saldo, transferências a manterem o total, a separação
+reservado/livre do Guardar e as semanas lançadas à mão no histórico.

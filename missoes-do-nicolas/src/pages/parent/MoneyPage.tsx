@@ -6,12 +6,14 @@ import { Modal } from '../../components/ui/Modal'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { EmojiPicker, Field, Select, TextInput } from '../../components/ui/Field'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { TransactionList } from '../../components/ui/TransactionList'
 import { WalletCard } from '../../components/child/WalletCard'
 import { GoalCard } from '../../components/child/GoalCard'
+import { WalletActionModal } from '../../components/parent/WalletActionModal'
+import { OpeningBalanceModal } from '../../components/parent/OpeningBalanceModal'
 import { GOAL_EMOJIS } from '../../data/defaults'
 import { formatEuro, parseMoneyInput, roundMoney } from '../../utils/money'
-import { goalProgress, totalBalance, walletBalances } from '../../utils/scoring'
-import { formatDateTime } from '../../utils/date'
+import { goalProgress, saveBreakdown, totalBalance, walletBalances } from '../../utils/scoring'
 import { createId } from '../../utils/id'
 import type { TransactionType, WalletId } from '../../types'
 
@@ -23,21 +25,13 @@ const MOVEMENT_TYPES: { value: TransactionType; label: string; sign: 'out' | 'in
   { value: 'adjustment', label: 'Ajuste manual dos pais', sign: 'both' },
 ]
 
-const TYPE_LABELS: Record<TransactionType, string> = {
-  allowance: 'Semanada',
-  extra_job: 'Trabalho extra',
-  spend: 'Gasto',
-  transfer: 'Transferência',
-  saving: 'Poupança',
-  share_use: 'Partilhar',
-  adjustment: 'Ajuste',
-}
-
 export function MoneyPage() {
   const { state, dispatch } = useApp()
   const balances = useMemo(() => walletBalances(state.transactions), [state.transactions])
   const goal = state.savingsGoals.find((item) => item.active)
   const [movementOpen, setMovementOpen] = useState(false)
+  const [openingOpen, setOpeningOpen] = useState(false)
+  const [actionWallet, setActionWallet] = useState<WalletId | null>(null)
   const [goalOpen, setGoalOpen] = useState(false)
   const [buying, setBuying] = useState(false)
   const [removingTx, setRemovingTx] = useState<string | null>(null)
@@ -54,15 +48,35 @@ export function MoneyPage() {
         </p>
       </header>
 
-      <Section title="Cofrinhos" emoji="🐷">
+      <Section title="Cofrinhos" emoji="🐷" hint="Cada cofrinho tem o seu botão para registar saídas.">
         <div className="grid gap-3 sm:grid-cols-3">
           {state.wallets.map((wallet) => (
-            <WalletCard key={wallet.id} wallet={wallet} balance={balances[wallet.id]} />
+            <div key={wallet.id} className="space-y-2">
+              <WalletCard
+                wallet={wallet}
+                balance={balances[wallet.id]}
+                reserved={wallet.id === 'save' ? saveBreakdown(balances.save, goal?.price).reserved : undefined}
+                goalName={wallet.id === 'save' ? goal?.name : undefined}
+              />
+              <Button
+                variant="secondary"
+                block
+                onClick={() => setActionWallet(wallet.id)}
+                disabled={balances[wallet.id] <= 0}
+              >
+                <span aria-hidden="true">➖</span> Tirar de {wallet.label}
+              </Button>
+            </div>
           ))}
         </div>
-        <Button size="lg" block onClick={() => setMovementOpen(true)}>
-          <span aria-hidden="true">➕</span> Registar movimento
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={() => setOpeningOpen(true)}>
+            <span aria-hidden="true">🏁</span> Definir saldo inicial
+          </Button>
+          <Button variant="ghost" onClick={() => setMovementOpen(true)}>
+            <span aria-hidden="true">➕</span> Outro movimento
+          </Button>
+        </div>
       </Section>
 
       <Section title="Objetivo de poupança" emoji="🎯">
@@ -105,47 +119,22 @@ export function MoneyPage() {
           <EmptyState emoji="🪙" title="Ainda não há movimentos registados" />
         ) : (
           <Card>
-            <ul className="divide-y divide-black/5">
-              {transactions.map((transaction) => {
-                const wallet = state.wallets.find((item) => item.id === transaction.wallet)
-                const toWallet = state.wallets.find((item) => item.id === transaction.toWallet)
-                return (
-                  <li key={transaction.id} className="flex items-center gap-3 py-2.5">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold">{transaction.description}</p>
-                      <p className="text-xs text-ink-soft">
-                        {TYPE_LABELS[transaction.type]} · {wallet?.label}
-                        {toWallet ? ` → ${toWallet.label}` : ''} · {formatDateTime(transaction.date)}
-                      </p>
-                    </div>
-                    <span
-                      className={
-                        transaction.amount < 0
-                          ? 'shrink-0 font-black text-berry-700'
-                          : 'shrink-0 font-black text-grow-700'
-                      }
-                    >
-                      {transaction.type === 'transfer'
-                        ? formatEuro(transaction.amount)
-                        : `${transaction.amount < 0 ? '' : '+'}${formatEuro(transaction.amount)}`}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setRemovingTx(transaction.id)}
-                      aria-label={`Apagar movimento ${transaction.description}`}
-                      className="shrink-0 rounded-full px-2 py-1 text-ink-soft hover:bg-black/5"
-                    >
-                      🗑️
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
+            <TransactionList
+              transactions={transactions}
+              wallets={state.wallets}
+              onRemove={setRemovingTx}
+            />
           </Card>
         )}
       </Section>
 
       {movementOpen && <MovementModal onClose={() => setMovementOpen(false)} />}
+
+      {openingOpen && <OpeningBalanceModal onClose={() => setOpeningOpen(false)} />}
+
+      {actionWallet && (
+        <WalletActionModal walletId={actionWallet} onClose={() => setActionWallet(null)} />
+      )}
 
       {goalOpen && (
         <GoalModal

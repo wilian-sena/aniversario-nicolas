@@ -14,9 +14,21 @@ interface WalletCardProps {
   /** Mostra moedas a cair (usado no fecho da semana). */
   animateCoins?: boolean
   incoming?: number
+  /** Parte do saldo comprometida com o objetivo (só faz sentido em "Guardar"). */
+  reserved?: number
+  goalName?: string
 }
 
-export function WalletCard({ wallet, balance, animateCoins = false, incoming }: WalletCardProps) {
+export function WalletCard({
+  wallet,
+  balance,
+  animateCoins = false,
+  incoming,
+  reserved,
+  goalName,
+}: WalletCardProps) {
+  const free = typeof reserved === 'number' ? Math.max(balance - reserved, 0) : undefined
+
   return (
     <div
       className={cn(
@@ -48,11 +60,21 @@ export function WalletCard({ wallet, balance, animateCoins = false, incoming }: 
         </span>
       </div>
 
-      <p className="mt-2 text-3xl font-black text-ink">{formatEuro(balance)}</p>
+      <p className="mt-2 text-3xl font-black text-ink tabular-nums">{formatEuro(balance)}</p>
       {typeof incoming === 'number' && incoming > 0 && (
         <p className="text-sm font-bold">+ {formatEuro(incoming)} esta semana</p>
       )}
-      <p className="mt-1 text-xs text-ink-soft">{wallet.description}</p>
+
+      {typeof reserved === 'number' && reserved > 0 ? (
+        <p className="mt-1 text-xs font-bold">
+          <span className="text-grow-700">🔒 {formatEuro(reserved)} para {goalName ?? 'o objetivo'}</span>
+          {typeof free === 'number' && free > 0 && (
+            <span className="text-ink-soft"> · {formatEuro(free)} livres</span>
+          )}
+        </p>
+      ) : (
+        <p className="mt-1 text-xs text-ink-soft">{wallet.description}</p>
+      )}
     </div>
   )
 }
