@@ -1,0 +1,79 @@
+name: Publicar no GitHub Pages
+
+# Publica dois sites de uma vez:
+#   /aniversario-nicolas/          → o convite de aniversário (ficheiros na raiz)
+#   /aniversario-nicolas/missoes/  → a app "Missões do Nicolas" (build do Vite)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Um deploy de cada vez; não cancela o que já está a correr.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: missoes-do-nicolas/package-lock.json
+
+      - name: Instalar dependências
+        working-directory: missoes-do-nicolas
+        run: npm ci
+
+      - name: Verificar (lint, tipos e testes)
+        working-directory: missoes-do-nicolas
+        run: |
+          npm run lint
+          npm test
+
+      - name: Construir a app
+        working-directory: missoes-do-nicolas
+        env:
+          BASE_PATH: /aniversario-nicolas/missoes/
+        run: npm run build
+
+      - name: Montar o site
+        run: |
+          mkdir -p _site
+          # O site do convite: tudo o que está na raiz, menos o código da app.
+          tar -c \
+            --exclude=./.git \
+            --exclude=./.github \
+            --exclude=./.claude \
+            --exclude=./_site \
+            --exclude=./missoes-do-nicolas \
+            --exclude=./optimize.py \
+            -f - . | tar -x -C _site
+          # A app, numa subpasta própria.
+          mkdir -p _site/missoes
+          cp -r missoes-do-nicolas/dist/. _site/missoes/
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
