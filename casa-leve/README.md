@@ -34,6 +34,7 @@ npm test             # Vitest — lógica de domínio e persistência
 npm run check        # lint + typecheck + testes
 npm run build        # exportação estática para ./out
 npm run icons        # regenera os ícones PNG da PWA
+npm run demo         # a mesma aplicação num único HTML (demo/dist/index.html)
 ```
 
 O service worker só é registado em produção (`npm run build`), para não interferir com o
@@ -45,6 +46,16 @@ hot reload durante o desenvolvimento.
 npm run build
 npx serve out        # ou: cd out && python3 -m http.server 4321
 ```
+
+### Versão de demonstração num ficheiro só
+
+`npm run demo` produz `demo/dist/index.html`: a mesma aplicação — os mesmos ecrãs, o mesmo domínio,
+os mesmos temporizadores — empacotada num único HTML que abre em qualquer lado, sem servidor.
+
+Serve para mostrar a aplicação a alguém sem a publicar. Duas diferenças em relação à versão real:
+`next/link` e `next/navigation` são trocados por um router de fragmento (`demo/shims/`), e não há
+service worker nem instalação no telemóvel. Se o IndexedDB não estiver disponível (por exemplo
+dentro de um iframe restrito), a aplicação continua a funcionar em memória durante a sessão.
 
 ---
 

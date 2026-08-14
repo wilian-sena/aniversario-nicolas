@@ -57,7 +57,14 @@ class IndexedDbPersistence implements Persistence {
   private db: Promise<IDBDatabase> | null = null;
 
   private connect(): Promise<IDBDatabase> {
-    if (!this.db) this.db = openDatabase();
+    if (!this.db) {
+      this.db = openDatabase().catch((error) => {
+        // Modo privado, iframe com restricoes, quota cheia: a casa continua
+        // a funcionar nesta sessao, apenas sem guardar entre aberturas.
+        this.db = null;
+        throw error;
+      });
+    }
     return this.db;
   }
 
@@ -130,9 +137,48 @@ class MemoryPersistence implements Persistence {
 
 let instance: Persistence | null = null;
 
+/**
+ * Se o IndexedDB existir mas recusar abrir, passamos para memoria em vez de
+ * deixar a aplicacao a meio: marcar tarefas continua a funcionar.
+ */
+class ResilientPersistence implements Persistence {
+  private primary: Persistence = new IndexedDbPersistence();
+  private fallback: MemoryPersistence | null = null;
+
+  private async run<T>(action: (store: Persistence) => Promise<T>): Promise<T> {
+    if (this.fallback) return action(this.fallback);
+    try {
+      return await action(this.primary);
+    } catch {
+      this.fallback = new MemoryPersistence();
+      return action(this.fallback);
+    }
+  }
+
+  getAll<T>(store: StoreName): Promise<T[]> {
+    return this.run((db) => db.getAll<T>(store));
+  }
+
+  put<T>(store: StoreName, value: T): Promise<void> {
+    return this.run((db) => db.put(store, value));
+  }
+
+  remove(store: StoreName, key: string): Promise<void> {
+    return this.run((db) => db.remove(store, key));
+  }
+
+  clear(store: StoreName): Promise<void> {
+    return this.run((db) => db.clear(store));
+  }
+
+  reset(): Promise<void> {
+    return this.run((db) => db.reset());
+  }
+}
+
 export function getPersistence(): Persistence {
   if (!instance) {
-    instance = hasIndexedDb() ? new IndexedDbPersistence() : new MemoryPersistence();
+    instance = hasIndexedDb() ? new ResilientPersistence() : new MemoryPersistence();
   }
   return instance;
 }
