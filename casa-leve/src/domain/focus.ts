@@ -55,6 +55,10 @@ export interface FocusList {
   /** Por fazer, ja limitadas, seguidas das ultimas feitas. */
   visible: ResolvedTask[];
   hidden: number;
+  /** Quantas faltam ao todo (0 = esta pessoa acabou o dia). */
+  pending: number;
+  /** Havia alguma coisa para fazer hoje. */
+  total: number;
 }
 
 /**
@@ -75,5 +79,7 @@ export function focusList(tasks: ResolvedTask[], phase: Phase, limit = 4, doneLi
   return {
     visible: [...pending.slice(0, limit), ...done],
     hidden: Math.max(0, pending.length - limit),
+    pending: pending.length,
+    total: counted.length,
   };
 }

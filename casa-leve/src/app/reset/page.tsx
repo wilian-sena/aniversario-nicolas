@@ -8,12 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { Timer } from '@/components/Timer';
 import { TaskChecklist } from '@/components/TaskChecklist';
 import { FAMILY } from '@/domain/seed/family';
+import { nightGoals } from '@/domain/dayPlan';
 import { memberTheme } from '@/lib/members';
 import { cn } from '@/lib/cn';
 import { useApp } from '@/store/AppState';
 import { useToday } from '@/store/selectors';
-
-const GOALS = ['Pia livre', 'Mesa livre', 'Chão desimpedido', 'Mochila pronta'];
 
 /** §10 — o reset da noite: temporizador, tarefas por pessoa e fecho do dia. */
 export default function ResetPage() {
@@ -22,6 +21,7 @@ export default function ResetPage() {
   const day = useToday();
 
   const resetTasks = day.visible.filter((t) => t.type === 'reset');
+  const goals = nightGoals(day.plan.dayOfWeek);
   const closed = day.flags.dayClosed;
 
   const closeDay = () => {
@@ -47,7 +47,7 @@ export default function ResetPage() {
           Objetivo desta noite
         </h2>
         <ul className="grid grid-cols-2 gap-2">
-          {GOALS.map((goal) => (
+          {goals.map((goal) => (
             <li
               key={goal}
               className="rounded-2xl border border-linha bg-white px-3 py-3 text-sm font-semibold uppercase tracking-wide text-navy-700"

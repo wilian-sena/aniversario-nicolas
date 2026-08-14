@@ -1,5 +1,6 @@
-import type { IsoDate, Zone, ZoneMission } from '@/domain/types';
+import type { Completion, IsoDate, Zone, ZoneMission } from '@/domain/types';
 import { ZONES, ZONE_COUNT } from '@/domain/seed/zones';
+import { instanceId, zoneMissionTaskId } from '@/domain/ids';
 import { weeksBetween } from '@/lib/date';
 
 /**
@@ -38,6 +39,20 @@ export function toggleMissionPick(picked: string[], missionId: string): string[]
   if (picked.includes(missionId)) return picked.filter((id) => id !== missionId);
   if (picked.length >= MAX_WEEKLY_MISSIONS) return picked;
   return [...picked, missionId];
+}
+
+/**
+ * A zona e um compromisso da semana, nao do dia: uma missao feita na terca
+ * continua feita na quarta.
+ */
+export function completedMissionsInWeek(
+  picked: string[],
+  weekDates: IsoDate[],
+  completions: Map<string, Completion>,
+): string[] {
+  return picked.filter((missionId) =>
+    weekDates.some((date) => completions.has(instanceId(zoneMissionTaskId(missionId), date))),
+  );
 }
 
 export function zoneProgressLabel(picked: string[], doneCount: number): string {

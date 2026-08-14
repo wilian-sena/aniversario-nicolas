@@ -5,6 +5,8 @@ export const WEEKDAYS: DayOfWeek[] = [1, 2, 3, 4, 5];
 export const EVERY_DAY: DayOfWeek[] = [0, 1, 2, 3, 4, 5, 6];
 /** Noites com atividade externa — manutencao minima (Regra 1). */
 export const ACTIVITY_NIGHTS: DayOfWeek[] = [1, 3, 5];
+/** Noites em que amanha ha escola: e nestas que a mochila importa. */
+export const SCHOOL_EVE: DayOfWeek[] = [0, 1, 2, 3, 4];
 
 type Draft = Omit<TaskTemplate, 'recurring' | 'priority' | 'isEssential'> &
   Partial<Pick<TaskTemplate, 'recurring' | 'priority' | 'isEssential'>>;
@@ -185,7 +187,7 @@ const RESET: TaskTemplate[] = [
     title: 'Mochila preparada',
     memberId: WILIAN,
     type: 'reset',
-    days: EVERY_DAY,
+    days: SCHOOL_EVE,
     duration: 3,
     isEssential: true,
   }),
@@ -225,7 +227,7 @@ const RESET: TaskTemplate[] = [
     title: 'Mochila no sítio',
     memberId: NICOLAS,
     type: 'reset',
-    days: EVERY_DAY,
+    days: WEEKDAYS,
     duration: 2,
     points: 1,
     starCategory: 'autonomia',

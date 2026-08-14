@@ -2,11 +2,11 @@
 
 import { useMemo } from 'react';
 import type { DayFlags, IsoDate, ResolvedTask, Zone } from '@/domain/types';
-import { getZoneForDate } from '@/domain/zones';
+import { completedMissionsInWeek, getZoneForDate } from '@/domain/zones';
 import { canCloseDay, dayProgress, resolveTasks, type DayProgress } from '@/domain/schedule';
 import { getDayPlan } from '@/domain/dayPlan';
 import { useApp } from '@/store/AppState';
-import { weekKey as toWeekKey } from '@/lib/date';
+import { weekDates, weekKey as toWeekKey } from '@/lib/date';
 
 export interface DayView {
   date: IsoDate;
@@ -14,6 +14,8 @@ export interface DayView {
   plan: ReturnType<typeof getDayPlan>;
   zone: Zone;
   missionIds: string[];
+  /** Missoes ja concluidas nesta semana (a zona nao e um compromisso diario). */
+  missionsDone: string[];
   tasks: ResolvedTask[];
   visible: ResolvedTask[];
   progress: DayProgress;
@@ -31,6 +33,7 @@ export function useDay(date: IsoDate): DayView {
     const plan = getDayPlan(date, settings);
     const zone = getZoneForDate(date, settings.zoneAnchor);
     const tasks = resolveTasks({ date, settings, missionIds }, completionsById);
+    const missionsDone = completedMissionsInWeek(missionIds, weekDates(date), completionsById);
     const flags = flagsByDate.get(date) ?? { date, essentialMode: false, dayClosed: false };
     const visible = flags.essentialMode ? tasks.filter((t) => t.isEssential) : tasks;
 
@@ -40,6 +43,7 @@ export function useDay(date: IsoDate): DayView {
       plan,
       zone,
       missionIds,
+      missionsDone,
       tasks,
       visible,
       progress: dayProgress(tasks),

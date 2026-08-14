@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { ZONES } from '@/domain/seed/zones';
+import type { Completion } from '@/domain/types';
 import {
   MAX_WEEKLY_MISSIONS,
+  completedMissionsInWeek,
   getNextZone,
   getZoneForDate,
   toggleMissionPick,
   zoneProgressLabel,
 } from '@/domain/zones';
-import { addDays } from '@/lib/date';
+import { addDays, weekDates } from '@/lib/date';
 
 const ANCHOR = '2026-01-05'; // segunda-feira
 
@@ -66,5 +68,46 @@ describe('missões da semana', () => {
   it('descreve o progresso sem percentagens', () => {
     expect(zoneProgressLabel([], 0)).toBe('Ainda não escolheste missões');
     expect(zoneProgressLabel(['a', 'b', 'c'], 2)).toBe('2 de 3 missões escolhidas concluídas');
+  });
+});
+
+describe('progresso da zona ao longo da semana', () => {
+  const TERCA = '2026-08-11';
+  const QUARTA = '2026-08-12';
+  const semana = weekDates(TERCA);
+
+  const feita = (missionId: string, date: string): [string, Completion] => [
+    `zm-${missionId}@${date}`,
+    {
+      instanceId: `zm-${missionId}@${date}`,
+      templateId: `zm-${missionId}`,
+      memberId: 'familia',
+      date,
+      completedAt: `${date}T20:00:00.000Z`,
+      points: 0,
+    },
+  ];
+
+  it('conta as missões feitas em qualquer dia da semana', () => {
+    const completions = new Map([feita('z2-gaveta', TERCA)]);
+    expect(completedMissionsInWeek(['z2-gaveta', 'z2-prateleira'], semana, completions)).toEqual([
+      'z2-gaveta',
+    ]);
+  });
+
+  it('uma missão feita na terça continua feita na quarta', () => {
+    const completions = new Map([feita('z2-gaveta', TERCA)]);
+    const naQuarta = completedMissionsInWeek(['z2-gaveta'], weekDates(QUARTA), completions);
+    expect(naQuarta).toEqual(['z2-gaveta']);
+  });
+
+  it('não conta missões de outras semanas', () => {
+    const completions = new Map([feita('z2-gaveta', '2026-08-04')]);
+    expect(completedMissionsInWeek(['z2-gaveta'], semana, completions)).toEqual([]);
+  });
+
+  it('não conta missões que deixaram de estar escolhidas', () => {
+    const completions = new Map([feita('z2-gaveta', TERCA)]);
+    expect(completedMissionsInWeek(['z2-prateleira'], semana, completions)).toEqual([]);
   });
 });

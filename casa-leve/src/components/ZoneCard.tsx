@@ -2,20 +2,20 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import type { ResolvedTask, Zone } from '@/domain/types';
+import type { Zone } from '@/domain/types';
 import { zoneProgressLabel } from '@/domain/zones';
 import { Card } from '@/components/ui/Card';
 
 export function ZoneCard({
   zone,
   missionIds,
-  zoneTasks,
+  missionsDone,
 }: {
   zone: Zone;
   missionIds: string[];
-  zoneTasks: ResolvedTask[];
+  /** Missoes concluidas nesta semana. */
+  missionsDone: string[];
 }) {
-  const done = zoneTasks.filter((t) => t.completed).length;
 
   return (
     <Card className="p-0">
@@ -32,7 +32,7 @@ export function ZoneCard({
             <p className="mt-1 text-sm text-navy-500">
               {missionIds.length === 0
                 ? 'Escolhe 1 a 3 missões para esta semana'
-                : zoneProgressLabel(missionIds, done)}
+                : zoneProgressLabel(missionIds, missionsDone.length)}
             </p>
           </div>
           <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-navy-300" aria-hidden="true" />

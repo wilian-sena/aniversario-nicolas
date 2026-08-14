@@ -47,11 +47,24 @@ describe('foco do momento', () => {
     expect(sorted[1].id).toBe('micro');
   });
 
+  it('sabe quando a pessoa acabou o dia', () => {
+    const feitas = focusList(
+      [task('a', 'reset', { completed: true, completedAt: '2026-08-14T20:00:00.000Z' })],
+      'noite',
+    );
+    expect(feitas.pending).toBe(0);
+    expect(feitas.total).toBe(1);
+
+    const semNada = focusList([], 'noite');
+    expect(semNada.total).toBe(0);
+  });
+
   it('mostra poucas tarefas e conta as restantes', () => {
     const tasks = Array.from({ length: 9 }, (_, i) => task(`t${i}`, 'reset'));
     const list = focusList(tasks, 'noite', 4);
     expect(list.visible).toHaveLength(4);
     expect(list.hidden).toBe(5);
+    expect(list.pending).toBe(9);
   });
 
   it('nunca mostra opcionais e conta só o que falta', () => {

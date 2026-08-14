@@ -104,7 +104,7 @@ export function MemberDetail({ memberId }: { memberId: string }) {
           </Card>
         </div>
         <p className="mt-2 px-1 text-xs text-navy-500">
-          Estes números são só para a própria pessoa. Não há comparações nem rankings.
+          Estes números são só para a própria pessoa.
         </p>
       </section>
 

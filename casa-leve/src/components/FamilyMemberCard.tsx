@@ -32,7 +32,8 @@ export function FamilyMemberCard({
   const theme = memberTheme(member.id);
   const counted = tasks.filter((t) => t.priority !== 'optional');
   const done = counted.filter((t) => t.completed).length;
-  const { visible, hidden } = focusList(tasks, phase, limit);
+  const { visible, hidden, pending, total } = focusList(tasks, phase, limit);
+  const acabou = total > 0 && pending === 0;
 
   return (
     <article className={cn('rounded-card border bg-white p-4', theme.border)}>
@@ -60,13 +61,16 @@ export function FamilyMemberCard({
         ) : null}
       </div>
 
+      {acabou ? (
+        <p className={cn('mb-2 rounded-2xl px-3 py-2 text-[15px] font-medium', theme.soft, theme.text)}>
+          {member.name} já tratou de tudo. ✓
+        </p>
+      ) : null}
+
       <TaskChecklist
         tasks={visible}
         onToggle={onToggle}
-        emptyMessage={
-          emptyMessage ??
-          (counted.length > 0 ? `${member.name} já tratou de tudo. ✓` : `Hoje ${member.name} não tem nada.`)
-        }
+        emptyMessage={emptyMessage ?? `Hoje ${member.name} não tem nada.`}
       />
 
       {hidden > 0 ? (

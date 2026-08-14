@@ -14,11 +14,10 @@ import { KITCHEN_DUTY, TASK_TEMPLATES } from '@/domain/seed/tasks';
 import { getBlessingTasksForDate } from '@/domain/blessing';
 import { externalActivitiesForDay, isMinimalNight } from '@/domain/dayPlan';
 import { getZoneForDate } from '@/domain/zones';
+import { instanceId, zoneMissionTaskId } from '@/domain/ids';
 import { dayOfWeek } from '@/lib/date';
 
-export function instanceId(templateId: string, date: IsoDate): string {
-  return `${templateId}@${date}`;
-}
+export { instanceId };
 
 export interface KitchenDuty {
   cookId: MemberId;
@@ -52,7 +51,7 @@ export function zoneMissionTemplates(zone: Zone, missionIds: string[]): TaskTemp
   return zone.missions
     .filter((m) => missionIds.includes(m.id))
     .map((mission) => ({
-      id: `zm-${mission.id}`,
+      id: zoneMissionTaskId(mission.id),
       title: mission.title,
       description: `Zona ${zone.id} — ${zone.shortName}`,
       memberId: SHARED,

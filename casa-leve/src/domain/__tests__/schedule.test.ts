@@ -11,7 +11,7 @@ import {
   templatesForDate,
   visibleTasks,
 } from '@/domain/schedule';
-import { getDayPlan, isMinimalNight } from '@/domain/dayPlan';
+import { getDayPlan, isMinimalNight, nightGoals } from '@/domain/dayPlan';
 import { getZoneForDate } from '@/domain/zones';
 import { ZONES } from '@/domain/seed/zones';
 import { ANA, NICOLAS, SHARED, WILIAN } from '@/domain/seed/family';
@@ -153,11 +153,26 @@ describe('modo essencial e fecho do dia', () => {
     expect(essencial.every((t) => t.isEssential)).toBe(true);
   });
 
-  it('o essencial cobre louça, bancada, cesto, brinquedos e mochila', () => {
+  it('o essencial cobre louça, bancada, cesto e brinquedos', () => {
     const ids = essentialTasks(tasks()).map((t) => t.id);
     expect(ids).toEqual(
-      expect.arrayContaining(['k-louca', 'k-bancada', 'r-n-cesto', 'r-n-brinquedos', 'r-w-mochila']),
+      expect.arrayContaining(['k-louca', 'k-bancada', 'r-n-cesto', 'r-n-brinquedos']),
     );
+  });
+
+  it('a mochila só é essencial na véspera de um dia de escola', () => {
+    const naVespera = resolveTasks({ date: DOMINGO, settings, missionIds: [] }, new Map());
+    expect(naVespera.map((t) => t.id)).toContain('r-w-mochila');
+
+    for (const semEscolaAmanha of [SEXTA, SABADO]) {
+      const tarefas = resolveTasks({ date: semEscolaAmanha, settings, missionIds: [] }, new Map());
+      expect(tarefas.map((t) => t.id)).not.toContain('r-w-mochila');
+    }
+  });
+
+  it('mesmo sem mochila o dia continua a poder fechar-se', () => {
+    const sexta = resolveTasks({ date: SEXTA, settings, missionIds: [] }, new Map());
+    expect(essentialTasks(sexta).length).toBeGreaterThan(0);
   });
 
   it('só deixa fechar o dia quando o essencial está feito', () => {
@@ -170,7 +185,7 @@ describe('modo essencial e fecho do dia', () => {
   it('conta o progresso sem percentagens estranhas', () => {
     const all = tasks();
     const contaveis = all.filter((t) => t.priority !== 'optional');
-    const progress = dayProgress(all.map((t) => (t.id === 'r-w-mochila' ? { ...t, completed: true } : t)));
+    const progress = dayProgress(all.map((t) => (t.id === 'r-n-cesto' ? { ...t, completed: true } : t)));
     expect(progress.total).toBe(contaveis.length);
     expect(progress.done).toBe(1);
     expect(progress.essentialTotal).toBeGreaterThan(0);
@@ -199,6 +214,14 @@ describe('quem faz o quê', () => {
     expect(getDayPlan(SABADO, settings).theme).toBe('family');
     expect(getDayPlan(DOMINGO, settings).theme).toBe('planning');
     expect(getDayPlan(QUINTA, settings).focusMinutes).toBe(25);
+  });
+
+  it('só promete mochila pronta quando amanhã há escola', () => {
+    expect(nightGoals(0)).toContain('Mochila pronta');
+    expect(nightGoals(3)).toContain('Mochila pronta');
+    expect(nightGoals(5)).not.toContain('Mochila pronta');
+    expect(nightGoals(6)).not.toContain('Mochila pronta');
+    expect(nightGoals(5)).toEqual(['Pia livre', 'Mesa livre', 'Chão desimpedido']);
   });
 
   it('não põe tarefas domésticas pesadas na sexta', () => {

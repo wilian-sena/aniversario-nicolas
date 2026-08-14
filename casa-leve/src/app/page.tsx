@@ -13,6 +13,7 @@ import { EssentialMode } from '@/components/EssentialMode';
 import { HouseNow } from '@/components/HouseNow';
 import { FAMILY, SHARED } from '@/domain/seed/family';
 import { getKitchenDuty } from '@/domain/schedule';
+import { nightGoals } from '@/domain/dayPlan';
 import { memberName } from '@/lib/members';
 import { MicroActions } from '@/components/MicroActions';
 import { phaseForHour, PHASE_LABEL, type Phase } from '@/domain/focus';
@@ -162,11 +163,7 @@ export default function TodayPage() {
         <SectionTitle>
           <span id="zona-titulo">Zona da semana</span>
         </SectionTitle>
-        <ZoneCard
-          zone={day.zone}
-          missionIds={day.missionIds}
-          zoneTasks={tasks.filter((t) => t.type === 'zone')}
-        />
+        <ZoneCard zone={day.zone} missionIds={day.missionIds} missionsDone={day.missionsDone} />
       </section>
 
       {plan.theme === 'blessing' ? (
@@ -201,7 +198,7 @@ export default function TodayPage() {
         </Link>
         <p className="mt-2 px-1 text-center text-xs text-navy-500">
           <Clock className="mr-1 inline h-3 w-3" aria-hidden="true" />
-          Pia livre · Mesa livre · Chão desimpedido · Mochila pronta
+          {nightGoals(plan.dayOfWeek).join(' · ')}
         </p>
       </section>
 

@@ -71,8 +71,10 @@ export function TaskCard({
         {task.points ? (
           <span className="flex items-center gap-1 text-xs font-semibold text-sol">
             <Star className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
-            <span className="sr-only">Vale</span>
-            {task.points}
+            <span className="sr-only">
+              Vale {task.points} {task.points === 1 ? 'estrela' : 'estrelas'}
+            </span>
+            <span aria-hidden="true">{task.points}</span>
           </span>
         ) : null}
       </button>

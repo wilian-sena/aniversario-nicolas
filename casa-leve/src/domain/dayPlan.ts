@@ -1,6 +1,14 @@
 import type { Activity, DayOfWeek, DayPlan, DayTheme, IsoDate, Settings } from '@/domain/types';
 import { ACTIVITIES } from '@/domain/seed/family';
+import { SCHOOL_EVE } from '@/domain/seed/tasks';
 import { dayOfWeek } from '@/lib/date';
+
+const NIGHT_GOALS = ['Pia livre', 'Mesa livre', 'Chão desimpedido'];
+
+/** §10 — a mochila só entra nos objetivos quando amanhã há escola. */
+export function nightGoals(day: DayOfWeek): string[] {
+  return SCHOOL_EVE.includes(day) ? [...NIGHT_GOALS, 'Mochila pronta'] : NIGHT_GOALS;
+}
 
 interface ThemeSpec {
   theme: DayTheme;

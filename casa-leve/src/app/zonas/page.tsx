@@ -9,14 +9,13 @@ import { TaskChecklist } from '@/components/TaskChecklist';
 import { ZoneMissionCard } from '@/components/ZoneMissionCard';
 import { ZONES } from '@/domain/seed/zones';
 import { MAX_WEEKLY_MISSIONS, getNextZone, toggleMissionPick, zoneProgressLabel } from '@/domain/zones';
-import { instanceId } from '@/domain/schedule';
 import { cn } from '@/lib/cn';
 import { useApp } from '@/store/AppState';
 import { useToday } from '@/store/selectors';
 
 export default function ZonesPage() {
   const router = useRouter();
-  const { snapshot, setZonePicks, toggleTask, completionsById } = useApp();
+  const { snapshot, setZonePicks, toggleTask } = useApp();
   const day = useToday();
   const [showTimer, setShowTimer] = useState(false);
 
@@ -24,7 +23,7 @@ export default function ZonesPage() {
   const picked = day.missionIds;
   const nextZone = getNextZone(day.date, snapshot.settings.zoneAnchor);
   const zoneTasks = day.tasks.filter((t) => t.type === 'zone');
-  const doneCount = picked.filter((id) => completionsById.has(instanceId(`zm-${id}`, day.date))).length;
+  const doneCount = day.missionsDone.length;
 
   return (
     <div className="space-y-6">
@@ -54,7 +53,7 @@ export default function ZonesPage() {
               key={mission.id}
               mission={mission}
               picked={picked.includes(mission.id)}
-              completed={completionsById.has(instanceId(`zm-${mission.id}`, day.date))}
+              completed={day.missionsDone.includes(mission.id)}
               disabled={picked.length >= MAX_WEEKLY_MISSIONS}
               onToggle={() => setZonePicks(day.weekKey, toggleMissionPick(picked, mission.id))}
             />
