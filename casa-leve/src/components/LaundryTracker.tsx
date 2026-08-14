@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { LAUNDRY_FLOW, LAUNDRY_LABELS, LAUNDRY_LOADS } from '@/domain/seed/home';
+import { LAUNDRY_ACTIONS, LAUNDRY_FLOW, LAUNDRY_LABELS, LAUNDRY_LOADS } from '@/domain/seed/home';
 import { getLaundryEntry, nextLaundryStatus, previousLaundryStatus } from '@/domain/laundry';
 import { WEEKDAY_LONG } from '@/lib/date';
 import { memberName } from '@/lib/members';
@@ -59,7 +59,7 @@ export function LaundryTracker({ weekKey }: { weekKey: string }) {
                 disabled={done}
                 className="tap flex flex-1 items-center justify-center gap-2 rounded-pill bg-navy-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40"
               >
-                {done ? 'Guardada ✓' : `Passar a ${LAUNDRY_LABELS[nextLaundryStatus(entry.status)].toLowerCase()}`}
+                {done ? 'Guardada ✓' : LAUNDRY_ACTIONS[nextLaundryStatus(entry.status)]}
                 {done ? null : <ChevronRight className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>

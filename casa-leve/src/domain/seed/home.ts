@@ -53,6 +53,18 @@ export const LAUNDRY_LABELS: Record<LaundryStatus, string> = {
   guardada: 'Guardada',
 };
 
+/** Rotulo do botao que faz a carga avancar — em portugues natural. */
+export const LAUNDRY_ACTIONS: Record<LaundryStatus, string> = {
+  'por-preparar': 'Voltar ao início',
+  preparada: 'Já está preparada',
+  'a-lavar': 'Pôr a lavar',
+  lavada: 'Já lavou',
+  'a-secar': 'Pôr a secar',
+  seca: 'Já secou',
+  dobrada: 'Já dobrei',
+  guardada: 'Guardar',
+};
+
 export const HOTSPOTS: Hotspot[] = [
   { id: 'mesa-jantar', name: 'Mesa de jantar', icon: '🍽️' },
   { id: 'bancada', name: 'Bancada da cozinha', icon: '🧽' },
