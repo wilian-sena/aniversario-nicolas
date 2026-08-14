@@ -73,6 +73,12 @@ NEXT_PUBLIC_BASE_PATH=/aniversario-nicolas/casa-leve npm run build
 O `basePath` é aplicado às rotas, ao manifest e ao registo do service worker. Publique o conteúdo
 de `out/` no caminho correspondente.
 
+**Manter fora das pesquisas**
+A aplicação envia `noindex, nofollow` e o `public/robots.txt` bloqueia tudo, por isso não aparece
+no Google. O endereço continua a funcionar para quem tiver o link — é o mesmo modelo do site de
+aniversário. Para exigir palavra-passe é preciso um plano pago da Netlify, e isso pode interferir
+com o funcionamento offline.
+
 **Instalar no telemóvel**
 Abrir o site em HTTPS → menu do browser → «Adicionar ao ecrã principal». A aplicação abre em modo
 standalone e continua a funcionar sem rede.

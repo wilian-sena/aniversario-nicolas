@@ -13,6 +13,8 @@ export const metadata: Metadata = {
     'A rotina da casa em pequenos passos: o que há hoje, quem faz o quê e o que falta para fechar o dia.',
   manifest: `${basePath}/manifest.webmanifest`,
   applicationName: 'Casa Leve',
+  // A aplicação é da família: fica fora dos motores de busca.
+  robots: { index: false, follow: false, nocache: true },
   appleWebApp: {
     capable: true,
     title: 'Casa Leve',
