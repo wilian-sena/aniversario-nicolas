@@ -53,8 +53,16 @@ npx serve out        # ou: cd out && python3 -m http.server 4321
 O `next.config.mjs` usa `output: 'export'`: o `npm run build` gera `out/`, um site estático que
 pode ser servido por qualquer alojamento.
 
-**Netlify / Vercel / Cloudflare Pages**
-Build command `npm run build`, publish directory `out`.
+**Netlify**
+Já existe `casa-leve/netlify.toml` com `base = "casa-leve"`, `command = "npm run build"` e
+`publish = "out"`. Basta ligar o repositório ao projeto Netlify — ou, a partir desta pasta:
+
+```bash
+npx netlify deploy --build --prod
+```
+
+**Vercel / Cloudflare Pages**
+Build command `npm run build`, publish directory `out` (root directory `casa-leve`).
 
 **GitHub Pages (subdiretório)**
 
