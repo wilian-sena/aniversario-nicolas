@@ -1,3 +1,0 @@
-# A Casa Leve é da família. Não deve aparecer em motores de busca.
-User-agent: *
-Disallow: /
