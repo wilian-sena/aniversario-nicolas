@@ -101,8 +101,8 @@ export function NotificationSettings() {
               <span
                 aria-hidden="true"
                 className={cn(
-                  'absolute top-1 h-5 w-5 rounded-full bg-white transition-transform',
-                  item.enabled ? 'translate-x-6' : 'translate-x-1',
+                  'absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform',
+                  item.enabled ? 'translate-x-5' : 'translate-x-0',
                 )}
               />
             </button>
