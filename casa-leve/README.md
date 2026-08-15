@@ -75,14 +75,24 @@ npx netlify deploy --build --prod
 **Vercel / Cloudflare Pages**
 Build command `npm run build`, publish directory `out` (root directory `casa-leve`).
 
-**GitHub Pages (subdiretório)**
+**GitHub Pages (a via mais simples)**
+
+Já existe `.github/workflows/casa-leve-pages.yml`: em cada push para `main` que toque em
+`casa-leve/`, o GitHub corre lint, tipos e testes, constrói e publica em
+
+```
+https://<utilizador>.github.io/aniversario-nicolas/casa-leve/
+```
+
+Só é preciso ativar uma vez: **Settings → Pages → Source: GitHub Actions**.
+
+Para construir com o mesmo endereço localmente:
 
 ```bash
 NEXT_PUBLIC_BASE_PATH=/aniversario-nicolas/casa-leve npm run build
 ```
 
-O `basePath` é aplicado às rotas, ao manifest e ao registo do service worker. Publique o conteúdo
-de `out/` no caminho correspondente.
+O `basePath` é aplicado às rotas, ao manifest, aos ícones e ao registo do service worker.
 
 **Manter fora das pesquisas**
 A aplicação envia `noindex, nofollow` e o `public/robots.txt` bloqueia tudo, por isso não aparece
